@@ -4,6 +4,7 @@ import org.jnetpcap.PcapIf;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,15 +13,24 @@ public class Launch2 extends javax.swing.JFrame {
   //Variables disponibles en todas mis vistas
   public PcapIf deviceSelected;
   public boolean isFile;
+  public boolean isInfinite;
   public int timeout;
+  public int numPaquetes;
+  public String filtro;
+  public String nombreArchivo;
+  public StringBuilder errbuf = new StringBuilder();
 
   //Variable propias de este frame
   private short progresoConfiguracion = 0;
-  private StringBuilder errbuf = new StringBuilder();
   private List<PcapIf> interfaces;
   private List<String> listaInt;
 
   public Launch2() {
+    /*Inicialización de las variables importantes*/
+    isFile = false;
+    timeout = 0;
+    numPaquetes = 0;
+    filtro = "";
     /*Obteniendo las interfaces por medio de PcapIf*/
     interfaces = new ArrayList<PcapIf>();
     listaInt = new ArrayList<String>();
@@ -74,6 +84,7 @@ public class Launch2 extends javax.swing.JFrame {
     jLabel5 = new javax.swing.JLabel();
     jLabel6 = new javax.swing.JLabel();
     jLabel7 = new javax.swing.JLabel();
+    jLabel8 = new javax.swing.JLabel();
     tpFuentePaquetes = new javax.swing.JTabbedPane();
     fcPaquetes = new javax.swing.JFileChooser();
     jScrollPane1 = new javax.swing.JScrollPane();
@@ -83,15 +94,15 @@ public class Launch2 extends javax.swing.JFrame {
     btnComenzar = new javax.swing.JButton();
     jLabel4 = new javax.swing.JLabel();
     jTextField1 = new javax.swing.JTextField();
+    txBytes = new javax.swing.JFormattedTextField(new Integer(65536));
     lblConfiguracion = new javax.swing.JLabel();
     pgConfiguracion = new javax.swing.JProgressBar();
     jSeparator2 = new javax.swing.JSeparator();
     jSeparator3 = new javax.swing.JSeparator();
     jSeparator4 = new javax.swing.JSeparator();
-    btnCancelar = new javax.swing.JButton();
     jLabel1 = new javax.swing.JLabel();
     jLabel2 = new javax.swing.JLabel();
-    jTextField2 = new javax.swing.JFormattedTextField(new Integer(10));
+    jTextField2 = new javax.swing.JFormattedTextField(new Integer(0));
     jTextField2.addFocusListener(new java.awt.event.FocusAdapter() {
       public void focusLost(java.awt.event.FocusEvent evt) {
         timeoutOut(evt);
@@ -99,7 +110,12 @@ public class Launch2 extends javax.swing.JFrame {
     });
     jcbSegundos = new javax.swing.JComboBox();
     jLabel3 = new javax.swing.JLabel();
-    jTextField3 = new javax.swing.JFormattedTextField(new Integer(100));
+    jTextField3 = new javax.swing.JFormattedTextField(new Integer(0));
+    jTextField3.addFocusListener(new java.awt.event.FocusAdapter() {
+      public void focusLost(java.awt.event.FocusEvent evt) {
+        paquetesOut(evt);
+      }
+    });
     jcbInfinite = new javax.swing.JCheckBox();
     jMenuBar1 = new javax.swing.JMenuBar();
     jMenu1 = new javax.swing.JMenu();
@@ -132,6 +148,7 @@ public class Launch2 extends javax.swing.JFrame {
     jLabel6.setText("Paquetes al aire");
 
     jLabel7.setText("Lectura de un archivo");
+    jLabel8.setText("Bytes capturados:");
 
     tpFuentePaquetes.addTab("Selección de archivo", fcPaquetes);
 
@@ -160,12 +177,14 @@ public class Launch2 extends javax.swing.JFrame {
     jLabel11.setText("Configuración:");
 
     btnComenzar.setText("Comenzar");
-
+    btnComenzar.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        btnComenzarActionPerformed(evt);
+      }
+    });
     jLabel4.setText("Filtro:");
 
     lblConfiguracion.setText("Configuración Inicial");
-
-    btnCancelar.setText("Cancelar");
 
     jLabel1.setText("Timeout - ");
 
@@ -183,14 +202,22 @@ public class Launch2 extends javax.swing.JFrame {
     jMenu2.setText("Edit");
     jMenuBar1.add(jMenu2);
 
-    setJMenuBar(jMenuBar1);
+    fcPaquetes.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        fileSelection(evt);
+      }
+    });
 
+    setJMenuBar(jMenuBar1);
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(layout.createSequentialGroup()
           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+              .addContainerGap()
+              .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 311, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addGroup(layout.createSequentialGroup()
               .addGap(27, 27, 27)
               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -199,12 +226,15 @@ public class Launch2 extends javax.swing.JFrame {
                 .addComponent(jSeparator4)
                 .addGroup(layout.createSequentialGroup()
                   .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblEscom)
-                    .addComponent(jLabel4)
+                    .addGroup(layout.createSequentialGroup()
+                      .addComponent(jLabel8)
+                      .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                      .addComponent(txBytes, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                       .addComponent(btnComenzar)
-                      .addGap(18, 18, 18)
-                      .addComponent(btnCancelar))
+                      .addGap(18, 18, 18))
+                    .addComponent(lblEscom)
+                    .addComponent(jLabel4)
                     .addGroup(layout.createSequentialGroup()
                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                         .addComponent(jLabel1)
@@ -232,10 +262,7 @@ public class Launch2 extends javax.swing.JFrame {
                       .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(jLabel7)
                         .addComponent(jLabel6))))
-                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 96, Short.MAX_VALUE))))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-              .addContainerGap()
-              .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 311, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 96, Short.MAX_VALUE)))))
           .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
               .addGap(21, 21, 21)
@@ -302,15 +329,17 @@ public class Launch2 extends javax.swing.JFrame {
               .addComponent(jSeparator4, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
               .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(btnComenzar)
-                .addComponent(btnCancelar))
-              .addGap(92, 92, 92))
+                .addComponent(jLabel8)
+                .addComponent(txBytes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+              .addGap(29, 29, 29)
+              .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(btnComenzar))
+              .addGap(46, 46, 46))
             .addGroup(layout.createSequentialGroup()
               .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
               .addComponent(tpFuentePaquetes, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
               .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
     );
-
     pack();
   }// </editor-fold>
 
@@ -368,7 +397,6 @@ public class Launch2 extends javax.swing.JFrame {
   }
 
   // Variables declaration - do not modify
-  private javax.swing.JButton btnCancelar;
   private javax.swing.JButton btnComenzar;
   private javax.swing.ButtonGroup buttonGroup1;
   private javax.swing.JFileChooser fcPaquetes;
@@ -380,6 +408,7 @@ public class Launch2 extends javax.swing.JFrame {
   private javax.swing.JLabel jLabel5;
   private javax.swing.JLabel jLabel6;
   private javax.swing.JLabel jLabel7;
+  private javax.swing.JLabel jLabel8;
   private javax.swing.JMenu jMenu1;
   private javax.swing.JMenu jMenu2;
   private javax.swing.JMenuBar jMenuBar1;
@@ -401,6 +430,7 @@ public class Launch2 extends javax.swing.JFrame {
   private javax.swing.JRadioButton rdAire;
   private javax.swing.JRadioButton rdArchivo;
   private javax.swing.JTabbedPane tpFuentePaquetes;
+  private javax.swing.JFormattedTextField txBytes;
   // End of variables declaration
   private static String asString(final byte[] mac) {
     final StringBuilder buf = new StringBuilder();
@@ -431,7 +461,6 @@ public class Launch2 extends javax.swing.JFrame {
         pcap = Pcap.openLive(deviceSelected.getName(), snaplen, flags, timeout, errbuf);*/
       progresoConfiguracion = 2;
       pgConfiguracion.setValue(progresoConfiguracion);
-      System.out.println(deviceSelected);
       listInterfaces.setEnabled(false);
 
     }
@@ -440,6 +469,37 @@ public class Launch2 extends javax.swing.JFrame {
   private void timeoutOut(java.awt.event.FocusEvent evt) {
     progresoConfiguracion = 3;
     pgConfiguracion.setValue(progresoConfiguracion);
+    if((int)jTextField2.getValue()<0){
+      jTextField2.setValue(10);
+    }
   }
-
+  /*Metodo para verificar la asignación del número del paquetes a capturar*/
+  private void paquetesOut(java.awt.event.FocusEvent evt) {
+    progresoConfiguracion = 4;
+    pgConfiguracion.setValue(progresoConfiguracion);
+    if((int)jTextField3.getValue()<0){
+      jTextField3.setValue(100);
+    }
+  }
+  /*Metodo usado para obtener la ruta de un archivo que sera usado por Pcap para analizar sus paquetes*/
+  private void fileSelection(java.awt.event.ActionEvent evt){
+    File archivo = fcPaquetes.getSelectedFile();
+    nombreArchivo = archivo.getName();
+  }
+  /*Metodo para recopilar los datos finales de configuración y pasar al siguiente frame que realizará
+  * la conexión con Pcap*/
+  private void btnComenzarActionPerformed(java.awt.event.ActionEvent evt) {
+    //Viendo si se tiene un loop infinito
+    isInfinite = jcbInfinite.isSelected();
+    filtro = jTextField1.getText();
+    numPaquetes = (int)jTextField3.getValue();
+    //viendo el timeout con segundos o milisegundos
+    timeout = (int)jTextField2.getValue();
+    if(jcbSegundos.getSelectedIndex()!=0) {
+      //milisegundos
+      timeout = timeout / 1000;
+    }
+    System.out.println("filtro: "+filtro+" INFINITE: "+isInfinite+" isFile: "+isFile+" timeout: "+timeout+" num: "+numPaquetes+
+    " nombreArchivo: "+nombreArchivo);
+  }
 }
