@@ -495,11 +495,14 @@ public class Launch2 extends javax.swing.JFrame {
     numPaquetes = (int)jTextField3.getValue();
     //viendo el timeout con segundos o milisegundos
     timeout = (int)jTextField2.getValue();
-    if(jcbSegundos.getSelectedIndex()!=0) {
+    if(jcbSegundos.getSelectedIndex()==0) {
       //milisegundos
-      timeout = timeout / 1000;
+      timeout = timeout * 1000;
     }
     System.out.println("filtro: "+filtro+" INFINITE: "+isInfinite+" isFile: "+isFile+" timeout: "+timeout+" num: "+numPaquetes+
     " nombreArchivo: "+nombreArchivo);
+    System.out.println("p: "+deviceSelected);
+    new Protocolos(deviceSelected,timeout,numPaquetes,isFile,isInfinite,filtro,nombreArchivo).setVisible(true);
+    this.setVisible(false);
   }
 }
