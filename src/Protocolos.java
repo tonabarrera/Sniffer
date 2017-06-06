@@ -221,7 +221,11 @@ public class Protocolos extends javax.swing.JFrame {
   //Metodo para agregar una fila a la JTable, la fila se llena con los valores de trama actual
   private void argegarFila(){
     DefaultTableModel modelo = (DefaultTableModel) tablaPaquetes.getModel();
-    String[]datosPaquete =  {"hola","amigos","esto","ya","srive","oh","si"};
+    /*{numero, tiempo, ipOrigen, ipDestino, Protocolo, Tamaño, Info}*/
+    String[]datosPaquete =  {String.valueOf(tramaActual.getNumero()),
+                              tramaActual.getTiempo(),tramaActual.getIpOrigen(),
+                              tramaActual.getIpDestino(),tramaActual.getProtocolo(),
+                              String.valueOf(tramaActual.getTamaño()), tramaActual.getInfo()};
     modelo.addRow(datosPaquete);
   }
 
@@ -236,6 +240,8 @@ public class Protocolos extends javax.swing.JFrame {
         //Opción: Número de paquetes
         for(int i = 0; i < numPaquetes; i++){
           tramaActual = capturador.obtenerPaquete();
+          tramaActual.setNumero(i);
+          tramaActual.analizarPaquete();
           analisisTramas.add(tramaActual);
           //Guardar datos en la tabla
           argegarFila();
