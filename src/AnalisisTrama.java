@@ -48,7 +48,7 @@ public class AnalisisTrama {
         //Análisis de datos generales, los cuales iran en el JTable
         tiempo = obtenerFecha();
         tamaño = paqueteActual.getTotalSize();
-        info = paqueteActual.getUTF8String(0, 20) + "...";
+        info = paqueteActual.getUTF8String(0, 20) + "..."; // esto que es?
         //Calculando ipOrigen e ipDestino
         calcularIp();
         //Obteniendo protocolo usado + Análisis de protocolos
