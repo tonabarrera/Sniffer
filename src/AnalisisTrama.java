@@ -55,7 +55,7 @@ public class AnalisisTrama {
         if (paqueteActual.hasHeader(analizadorIP4)) {
             //Análisis del IPv4 agregar codigo para el analisis aqui
             protocolo = "Ipv4";
-        } else if (paqueteActual.hasHeader(analizadorIP6)) {
+        } /*else if (paqueteActual.hasHeader(analizadorIP6)) {
             //Análisis IPv6
             protocolo = "Ipv6";
         } else if (paqueteActual.hasHeader(analizadorICMP)) {
@@ -70,7 +70,7 @@ public class AnalisisTrama {
         } else if (paqueteActual.hasHeader((analizadorUDP))) {
             //agregar codigo para el analisis aqui
             protocolo = "UDP";
-        }
+        }*/
     }
 
     /*Metodos Auxiliares*/
@@ -85,8 +85,10 @@ public class AnalisisTrama {
 
     //Asigna la direcciones ipOrigen e ipDestino del paquete
     private void calcularIp() {
-        byte[] sIP = new byte[4];
-        byte[] dIP = new byte[4];
+        int[] sIP = new int[4];
+        int[] dIP = new int[4];
+        StringBuilder aux_origen = new StringBuilder();
+        StringBuilder aux_destino = new StringBuilder();
 
         analizadorIP4 = new Ip4();
         if (!paqueteActual.hasHeader(analizadorIP4)) {
@@ -94,15 +96,20 @@ public class AnalisisTrama {
             ipDestino = "-----";
         } else {
             for (int i = 0; i < analizadorIP4.source().length; i++) {
-                sIP[i] = (analizadorIP4.source()[i] < 0) ? (byte) (analizadorIP4.source()[i] << 8) :
-                        analizadorIP4.source()[i];
-                dIP[i] = (analizadorIP4.destination()[i] < 0) ?
-                        (byte) (analizadorIP4.destination()[i] << 8) :
-                        analizadorIP4.destination()[i];
+                aux_origen.append(String.valueOf(
+                        (analizadorIP4.source()[i] < 0) ? (analizadorIP4.source()[i] + 256) :
+                                analizadorIP4.source()[i]));
+                aux_destino.append(String.valueOf((analizadorIP4.destination()[i] < 0) ?
+                        (analizadorIP4.destination()[i] +256) : analizadorIP4.destination()[i]));
+                if (i!=analizadorIP4.source().length-1) {
+                    aux_origen.append(".");
+                    aux_destino.append(".");
+                }
             }
             //Evitando usar el toString()
-            ipOrigen = new String(sIP);
-            ipDestino = new String(dIP);
+            ipOrigen = aux_origen.toString();
+            ipDestino = aux_destino.toString();
+            System.out.println(ipOrigen + " " + ipDestino);
         }
     }
 
