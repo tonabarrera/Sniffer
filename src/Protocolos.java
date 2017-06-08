@@ -91,13 +91,17 @@ public class Protocolos extends javax.swing.JFrame {
     });
 
     tablaPaquetes.setModel(new javax.swing.table.DefaultTableModel(
-      new Object [][] {
-        {null, null, null, null,null,null,null}
+      new Object [][] {{}
       },
       new String [] {
         "No.", "Tiempo", "Origen", "Destino","Protocolo","Tamaño","Info"
       }
     ));
+    tablaPaquetes.addMouseListener(new java.awt.event.MouseAdapter() {
+      public void mouseClicked(java.awt.event.MouseEvent evt) {
+        getTrama(evt);
+      }
+    });
     jScrollPane1.setViewportView(tablaPaquetes);
 
     jLabel4.setText("Análisis");
@@ -116,6 +120,7 @@ public class Protocolos extends javax.swing.JFrame {
       public int getSize() { return strings.length; }
       public Object getElementAt(int i) { return strings[i]; }
     });
+
     jScrollPane3.setViewportView(listaOriginal);
 
     jMenu1.setText("File");
@@ -216,7 +221,13 @@ public class Protocolos extends javax.swing.JFrame {
       capturador.pausarObtenecion();
     }
   }
-
+  //Obteniendo la información de una trama
+  private void getTrama(java.awt.event.MouseEvent evt) {
+    System.out.println("ouch");
+    int indiceTrama = tablaPaquetes.getSelectedRow();
+    //Mostrando información
+    System.out.println(analisisTramas.get(indiceTrama-1));
+  }
   /*Declaración de metodos de utilería en la aplicación*/
   //Metodo para agregar una fila a la JTable, la fila se llena con los valores de trama actual
   private void argegarFila(){
@@ -249,8 +260,16 @@ public class Protocolos extends javax.swing.JFrame {
         }
       }else{
         //Opción: Bucle Infinito
+        int i = 0;
         while(isInfinite){
-
+            tramaActual = capturador.obtenerPaquete();
+            tramaActual.setNumero(i);
+            tramaActual.analizarPaquete();
+            analisisTramas.add(tramaActual);
+            //Guardar datos en la tabla
+            argegarFila();
+            //guardar en la lista
+          i++;
         }
       }
     }//run()

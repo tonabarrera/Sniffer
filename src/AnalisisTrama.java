@@ -38,7 +38,14 @@ public class AnalisisTrama {
   private Ip4 analizadorIP4;
   private Ip6 analizadorIP6;
   //Capa Fisica
-
+  public AnalisisTrama(){
+    analizadorIP4 = new Ip4();
+    analizadorIP6 =  new Ip6();
+    analizadorARP =  new Arp();
+    analizadorICMP =  new Icmp();
+    analizadorTCP = new Tcp();
+    analizadorUDP =  new Udp();
+  }
   /*Analizando el paquete actual*/
   //Este paquete analiza un paquete de forma general, además de analizarlo de acuerdo a su
   //protocolo particular, los resultados de la analisis con guardados en sus variables correspondientes
@@ -47,7 +54,7 @@ public class AnalisisTrama {
     //Análisis de datos generales, los cuales iran en el JTable
     tiempo = obtenerFecha();
     tamaño = paqueteActual.getTotalSize();
-    info = paqueteActual.getUTF8String(0,20)+"...";
+    info = asString(paqueteActual.getByteArray(0,5))+"...";
     //Calculando ipOrigen e ipDestino
     calcularIp();
     //Obteniendo protocolo usado + Análisis de protocolos
@@ -82,20 +89,57 @@ public class AnalisisTrama {
   }
   //Asigna la direcciones ipOrigen e ipDestino del paquete
   private void calcularIp(){
-    byte[] sIP = new byte[4];
-    byte[] dIP = new byte[4];
+    byte[] sIP;
+    byte[] dIP;
+    byte[] sIP6;
+    byte[] dIP6;
+    ipOrigen = "";
+    ipDestino = "";
 
-    analizadorIP4 = new Ip4();
-    if (paqueteActual.hasHeader(analizadorIP4) == false) {
-      ipOrigen = "-----";
-      ipDestino = "-----";
-    }else {
+
+    if (paqueteActual.hasHeader(analizadorIP4) == true) {
+      //Es IP4
       sIP = analizadorIP4.source();
       dIP = analizadorIP4.destination();
       //Evitando usar el toString()
-      ipOrigen = new String(sIP);
-      ipDestino =  new String(dIP);
+      for(int i = 0; i < sIP.length; i++){
+        ipOrigen+=Integer.toString(sIP[i]);
+        if(i != sIP.length-1){
+          ipOrigen += ".";
+        }
+      }
+      for(int i = 0; i < dIP.length; i++){
+        ipDestino+=Integer.toString(dIP[i]);
+        if(i != dIP.length-1){
+          ipDestino += ".";
+        }
+      }
+
+    }else {
+      if(paqueteActual.hasHeader(analizadorIP6)==true){
+        sIP6 = analizadorIP6.source();
+        dIP6 = analizadorIP6.destination();
+        ipOrigen = asString(sIP6);
+        ipDestino = asString(dIP6);
+      }else {
+        ipOrigen = "-----";
+        ipDestino = "-----";
+      }
     }
+  }
+  /*El que nos paso Axel*/
+  private static String asString(final byte[] mac) {
+    final StringBuilder buf = new StringBuilder();
+    for (byte b : mac) {
+      if (buf.length() != 0) {
+        buf.append(':');
+      }
+      if (b >= 0 && b < 16) {
+        buf.append('0');
+      }
+      buf.append(Integer.toHexString((b < 0) ? b + 256 : b).toUpperCase());
+    }
+    return buf.toString();
   }
   /*Getters y Setters*/
   public PcapPacket getPaqueteActual() {
