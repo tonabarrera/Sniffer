@@ -1,4 +1,5 @@
 import org.jnetpcap.PcapIf;;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.util.LinkedList;
 import java.util.List;
@@ -116,7 +117,7 @@ public class Protocolos extends javax.swing.JFrame {
     jLabel5.setText("Trama original");
 
     listaOriginal.setModel(new javax.swing.AbstractListModel() {
-      String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+      String[] strings = { };
       public int getSize() { return strings.length; }
       public Object getElementAt(int i) { return strings[i]; }
     });
@@ -226,7 +227,22 @@ public class Protocolos extends javax.swing.JFrame {
     System.out.println("ouch");
     int indiceTrama = tablaPaquetes.getSelectedRow();
     //Mostrando información
-    System.out.println(analisisTramas.get(indiceTrama-1));
+    if(indiceTrama > 0){
+      AnalisisTrama tramaActual = analisisTramas.get(indiceTrama-1);
+      //Llenando lista con la información en hexadecimal de la trama
+      byte[] informacionOriginal = tramaActual.getInfoHexadecimal();
+      StringBuilder hexadecimal =  new StringBuilder();
+      DefaultListModel modelo = new DefaultListModel();
+
+      for(int i = 0; i < informacionOriginal.length; i++){
+        hexadecimal.append(String.format("%02X ", informacionOriginal[i]));
+        if(i % 10 == 0 && i > 0){
+          modelo.addElement(hexadecimal.toString());
+          hexadecimal.setLength(0);
+        }
+      }
+      listaOriginal.setModel(modelo);
+    }
   }
   /*Declaración de metodos de utilería en la aplicación*/
   //Metodo para agregar una fila a la JTable, la fila se llena con los valores de trama actual

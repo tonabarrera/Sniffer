@@ -38,8 +38,8 @@ public class AnalisisTrama {
     private Ip4 analizadorIP4;
     private Ip6 analizadorIP6;
     //Capa Fisica
-
-  //Capa Fisica
+    private byte[] infoHexadecimal;
+    //Capa Fisica
   public AnalisisTrama(){
     analizadorIP4 = new Ip4();
     analizadorIP6 =  new Ip6();
@@ -59,6 +59,8 @@ public class AnalisisTrama {
     info = asString(paqueteActual.getByteArray(0,5))+"...";
     //Calculando ipOrigen e ipDestino
     calcularIp();
+    //Copiando info en hexadecimal
+    accederHexadecimal();
     //Obteniendo protocolo usado + Análisis de protocolos
     if(paqueteActual.hasHeader(analizadorIP4)){
       //Análisis del IPv4 agregar codigo para el analisis aqui
@@ -140,7 +142,9 @@ public class AnalisisTrama {
             //System.out.println(ipOrigen + " " + ipDestino);
         }
     }
-
+    private void accederHexadecimal(){
+      infoHexadecimal = paqueteActual.getByteArray(0,(paqueteActual.size()));
+    }
     /*Getters y Setters*/
     public PcapPacket getPaqueteActual() {
         return paqueteActual;
@@ -206,4 +210,11 @@ public class AnalisisTrama {
         return tiempo;
     }
 
+  public byte[] getInfoHexadecimal() {
+    return infoHexadecimal;
+  }
+
+  public void setInfoHexadecimal(byte[] infoHexadecimal) {
+    this.infoHexadecimal = infoHexadecimal;
+  }
 }
