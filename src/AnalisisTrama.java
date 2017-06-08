@@ -64,7 +64,13 @@ public class AnalisisTrama {
     //Obteniendo protocolo usado + Análisis de protocolos
     if(paqueteActual.hasHeader(analizadorIP4)){
       //Análisis del IPv4 agregar codigo para el analisis aqui
-      protocolo = "Ipv4";
+        if(paqueteActual.getHeader(analizadorIP4).type()==2){
+            protocolo="IGMP";
+        }
+        else{
+            protocolo = "Ipv4";
+        }
+
     }else if(paqueteActual.hasHeader(analizadorIP6)){
       //Análisis IPv6
       protocolo = "Ipv6";
