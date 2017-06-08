@@ -247,7 +247,7 @@ public class Protocolos extends javax.swing.JFrame {
   class AdministradorPaquetes extends Thread{
     public void run(){
       //Validamos la opcion de conexión elegida
-      if(isInfinite != true){
+      if(!isInfinite){
         //Opción: Número de paquetes
         for(int i = 0; i < numPaquetes; i++){
           tramaActual = capturador.obtenerPaquete();

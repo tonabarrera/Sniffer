@@ -13,30 +13,32 @@ import java.util.Date;
 /*En esta clase se realizan las llamadas a las librerias de Jnetpcap para el análisis de un trama
 * Cada instancia de esta clase recibe un paquete crudo de Pcap*/
 public class AnalisisTrama {
-  //Paquete a analizar
-  private PcapPacket paqueteActual;
-  /*Variables básicas para un paquetes, seran mostradas en la JTable de la clase Protocolos*/
-  //Numero es enviado desde un for() que controla numPaquetes
-  private int numero;
-  //Calculados usando el paquete
-  private String tiempo;
-  //Usamos la clase Ip4 para obtener estos valores en el metodo calcularIp()
-  private String ipOrigen;
-  private String ipDestino;
+    //Paquete a analizar
+    private PcapPacket paqueteActual;
+    /*Variables básicas para un paquetes, seran mostradas en la JTable de la clase Protocolos*/
+    //Numero es enviado desde un for() que controla numPaquetes
+    private int numero;
+    //Calculados usando el paquete
+    private String tiempo;
+    //Usamos la clase Ip4 para obtener estos valores en el metodo calcularIp()
+    private String ipOrigen;
+    private String ipDestino;
 
-  private String protocolo;
-  private int tamaño;
-  private String info;
-  /*-------Agregar aqui las variable necesarias para cada protocolo-------------*/
+    private String protocolo;
+    private int tamaño;
+    private String info;
+    /*-------Agregar aqui las variable necesarias para cada protocolo-------------*/
   /*Variables para el análisis de protocolos, ordenados por prioridad segun modelo TCP/IP*/
-  //Capa Transporte
-  private Tcp analizadorTCP;
-  private Udp analizadorUDP;
-  //Capa Internet
-  private Arp analizadorARP;
-  private Icmp analizadorICMP;
-  private Ip4 analizadorIP4;
-  private Ip6 analizadorIP6;
+    //Capa Transporte
+    private Tcp analizadorTCP;
+    private Udp analizadorUDP;
+    //Capa Internet
+    private Arp analizadorARP;
+    private Icmp analizadorICMP;
+    private Ip4 analizadorIP4;
+    private Ip6 analizadorIP6;
+    //Capa Fisica
+
   //Capa Fisica
   public AnalisisTrama(){
     analizadorIP4 = new Ip4();
@@ -78,55 +80,7 @@ public class AnalisisTrama {
       protocolo = "UDP";
     }
   }
-  /*Metodos Auxiliares*/
-  //Retorna un String con la fecha y tiempo de captura del paquete
-  private String obtenerFecha(){
-    String tiempo = "";
-    DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-    Date fecha = new Date(paqueteActual.getCaptureHeader().timestampInMillis());
-    tiempo = df.format(fecha);
-    return tiempo;
-  }
-  //Asigna la direcciones ipOrigen e ipDestino del paquete
-  private void calcularIp(){
-    byte[] sIP;
-    byte[] dIP;
-    byte[] sIP6;
-    byte[] dIP6;
-    ipOrigen = "";
-    ipDestino = "";
 
-
-    if (paqueteActual.hasHeader(analizadorIP4) == true) {
-      //Es IP4
-      sIP = analizadorIP4.source();
-      dIP = analizadorIP4.destination();
-      //Evitando usar el toString()
-      for(int i = 0; i < sIP.length; i++){
-        ipOrigen+=Integer.toString(sIP[i]);
-        if(i != sIP.length-1){
-          ipOrigen += ".";
-        }
-      }
-      for(int i = 0; i < dIP.length; i++){
-        ipDestino+=Integer.toString(dIP[i]);
-        if(i != dIP.length-1){
-          ipDestino += ".";
-        }
-      }
-
-    }else {
-      if(paqueteActual.hasHeader(analizadorIP6)==true){
-        sIP6 = analizadorIP6.source();
-        dIP6 = analizadorIP6.destination();
-        ipOrigen = asString(sIP6);
-        ipDestino = asString(dIP6);
-      }else {
-        ipOrigen = "-----";
-        ipDestino = "-----";
-      }
-    }
-  }
   /*El que nos paso Axel*/
   private static String asString(final byte[] mac) {
     final StringBuilder buf = new StringBuilder();
@@ -141,67 +95,115 @@ public class AnalisisTrama {
     }
     return buf.toString();
   }
-  /*Getters y Setters*/
-  public PcapPacket getPaqueteActual() {
-    return paqueteActual;
-  }
-  public void setPaqueteActual(PcapPacket paqueteActual) {
-    this.paqueteActual = paqueteActual;
-  }
 
-  public void setNumero(int numero) {
-    this.numero = numero;
-  }
+    /*Metodos Auxiliares*/
+    //Retorna un String con la fecha y tiempo de captura del paquete
+    private String obtenerFecha() {
+        String tiempo;
+        DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+        Date fecha = new Date(paqueteActual.getCaptureHeader().timestampInMillis());
+        tiempo = df.format(fecha);
+        return tiempo;
+    }
 
-  public void setIpOrigen(String ipOrigen) {
-    this.ipOrigen = ipOrigen;
-  }
+    //Asigna la direcciones ipOrigen e ipDestino del paquete
+    private void calcularIp() {
+        int[] sIP = new int[4];
+        int[] dIP = new int[4];
+        StringBuilder aux_origen = new StringBuilder();
+        StringBuilder aux_destino = new StringBuilder();
 
-  public void setIpDestino(String ipDestino) {
-    this.ipDestino = ipDestino;
-  }
+        analizadorIP4 = new Ip4();
+        if (!paqueteActual.hasHeader(analizadorIP4)) {
+          if(paqueteActual.hasHeader(analizadorIP6)){
+            ipOrigen = asString(analizadorIP6.source());
+            ipDestino = asString(analizadorIP6.destination());
+          }else{
+            ipOrigen = "-----";
+            ipDestino = "-----";
+          }
+        } else {
+            for (int i = 0; i < analizadorIP4.source().length; i++) {
+                aux_origen.append(String.valueOf(
+                        (analizadorIP4.source()[i] < 0) ? (analizadorIP4.source()[i] + 256) :
+                                analizadorIP4.source()[i]));
+                aux_destino.append(String.valueOf((analizadorIP4.destination()[i] < 0) ?
+                        (analizadorIP4.destination()[i] +256) : analizadorIP4.destination()[i]));
+                if (i!=analizadorIP4.source().length-1) {
+                    aux_origen.append(".");
+                    aux_destino.append(".");
+                }
+            }
+            //Evitando usar el toString()
+            ipOrigen = aux_origen.toString();
+            ipDestino = aux_destino.toString();
+            //System.out.println(ipOrigen + " " + ipDestino);
+        }
+    }
 
-  public void setProtocolo(String protocolo) {
-    this.protocolo = protocolo;
-  }
+    /*Getters y Setters*/
+    public PcapPacket getPaqueteActual() {
+        return paqueteActual;
+    }
 
-  public void setTamaño(int tamaño) {
-    this.tamaño = tamaño;
-  }
+    public void setPaqueteActual(PcapPacket paqueteActual) {
+        this.paqueteActual = paqueteActual;
+    }
 
-  public void setInfo(String info) {
-    this.info = info;
-  }
+    public void setNumero(int numero) {
+        this.numero = numero;
+    }
 
-  public int getNumero() {
-    return numero;
-  }
+    public void setIpOrigen(String ipOrigen) {
+        this.ipOrigen = ipOrigen;
+    }
 
-  public String getIpOrigen() {
-    return ipOrigen;
-  }
+    public void setIpDestino(String ipDestino) {
+        this.ipDestino = ipDestino;
+    }
 
-  public String getIpDestino() {
-    return ipDestino;
-  }
+    public void setProtocolo(String protocolo) {
+        this.protocolo = protocolo;
+    }
 
-  public String getProtocolo() {
-    return protocolo;
-  }
+    public void setTamaño(int tamaño) {
+        this.tamaño = tamaño;
+    }
 
-  public int getTamaño() {
-    return tamaño;
-  }
+    public void setInfo(String info) {
+        this.info = info;
+    }
 
-  public String getInfo() {
-    return info;
-  }
+    public int getNumero() {
+        return numero;
+    }
 
-  public void setTiempo(String tiempo) {
-    this.tiempo = tiempo;
-  }
+    public String getIpOrigen() {
+        return ipOrigen;
+    }
 
-  public String getTiempo() {
-    return tiempo;
-  }
+    public String getIpDestino() {
+        return ipDestino;
+    }
+
+    public String getProtocolo() {
+        return protocolo;
+    }
+
+    public int getTamaño() {
+        return tamaño;
+    }
+
+    public String getInfo() {
+        return info;
+    }
+
+    public void setTiempo(String tiempo) {
+        this.tiempo = tiempo;
+    }
+
+    public String getTiempo() {
+        return tiempo;
+    }
+
 }
