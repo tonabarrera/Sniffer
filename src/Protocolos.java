@@ -271,6 +271,10 @@ public class Protocolos extends javax.swing.JFrame {
     modelo.addElement(informacion.toString());
     informacion.setLength(0);
 
+    informacion.append("Differentiated services: " + tramaActual.getTosECN());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
     informacion.append("Total Length: " + tramaActual.getLength());
     modelo.addElement(informacion.toString());
     informacion.setLength(0);
@@ -281,6 +285,10 @@ public class Protocolos extends javax.swing.JFrame {
     informacion.setLength(0);
 
     informacion.append(String.format("Flags: 0x%02X", tramaActual.getFlags()));
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append("Flags Description:"+ tramaActual.getFlagsDesc());
     modelo.addElement(informacion.toString());
     informacion.setLength(0);
 

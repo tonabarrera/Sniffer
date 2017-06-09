@@ -41,9 +41,11 @@ public class AnalisisTrama {
     private int version;
     private int headerLength;
     private int tos;
+    private int tosECN;
     private int length;
     private int Id;
     private int flags;
+    private String flagsDesc;
     private int offset;
     private int ttl;
     private int protocoloId;
@@ -87,9 +89,11 @@ public class AnalisisTrama {
                 setVersion(analizadorIP4.version());
                 setHeaderLength(analizadorIP4.hlen());
                 setTos(analizadorIP4.tos());
+                setTosECN(analizadorIP4.tos_ECN());
                 setLength(analizadorIP4.length());
                 setId(analizadorIP4.id());
                 setFlags(analizadorIP4.flags());
+                setFlagsDesc(analizadorIP4.flags_DFDescription());
                 setTtl(analizadorIP4.ttl());
                 setProtocoloId(analizadorIP4.type());
                 setChecksum(analizadorIP4.checksum());
@@ -336,5 +340,21 @@ public class AnalisisTrama {
 
     public void setChecksum(int checksum) {
         this.checksum = checksum;
+    }
+
+    public int getTosECN() {
+        return tosECN;
+    }
+
+    public void setTosECN(int tosDesc) {
+        this.tosECN = tosDesc;
+    }
+
+    public String getFlagsDesc() {
+        return flagsDesc;
+    }
+
+    public void setFlagsDesc(String flagsDesc) {
+        this.flagsDesc = flagsDesc;
     }
 }
