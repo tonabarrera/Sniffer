@@ -400,4 +400,36 @@ public class AnalisisTrama {
     public void setFlagsDesc(String flagsDesc) {
         this.flagsDesc = flagsDesc;
     }
+
+    public String getTipoIGMP() {
+        return tipoIGMP;
+    }
+
+    public void setTipoIGMP(String tipoIGMP) {
+        this.tipoIGMP = tipoIGMP;
+    }
+
+    public byte getTiempoRespuesta() {
+        return tiempoRespuesta;
+    }
+
+    public void setTiempoRespuesta(byte tiempoRespuesta) {
+        this.tiempoRespuesta = tiempoRespuesta;
+    }
+
+    public String getGrupo() {
+        return grupo;
+    }
+
+    public void setGrupo(String grupo) {
+        this.grupo = grupo;
+    }
+
+    public String getChecksumIGMP() {
+        return checksumIGMP;
+    }
+
+    public void setChecksumIGMP(String checksumIGMP) {
+        this.checksumIGMP = checksumIGMP;
+    }
 }
