@@ -242,8 +242,63 @@ public class Protocolos extends javax.swing.JFrame {
         }
       }
       listaOriginal.setModel(modelo);
+      mostarProtocolo(tramaActual);
     }
   }
+
+  private void mostarProtocolo(AnalisisTrama tramaActual) {
+    StringBuilder informacion = new StringBuilder();
+    DefaultListModel modelo = new DefaultListModel();
+
+    informacion.append("Protocolo: "+tramaActual.getProtocolo());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append(String.format("0%s .... = Version: %d",
+            Integer.toBinaryString(tramaActual.getVersion()),
+            tramaActual.getVersion()));
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append(String.format(".... 0%s = Header length: %d bytes (%X)",
+            Integer.toBinaryString(tramaActual.getHeaderLength()), tramaActual.getHeaderLength()*4,
+            tramaActual.getHeaderLength()));
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append(String.format("0x%02X = Type of service: %s", tramaActual.getTos(),
+            tramaActual.getTos()));
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append("Total Length: " + tramaActual.getLength());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append(String.format("Identifier: 0x%04X (%d)\n", tramaActual.getId(), tramaActual
+            .getId()));
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append(String.format("Flags: 0x%02X", tramaActual.getFlags()));
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append("Fragment Offset: " + tramaActual.getOffset());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append("Time to live: " + tramaActual.getTtl());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append(String.format("Header Checksum: 0x%04X\n", tramaActual.getChecksum()));
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    listaAnalisis.setModel(modelo);
+  }
+
   /*Declaración de metodos de utilería en la aplicación*/
   //Metodo para agregar una fila a la JTable, la fila se llena con los valores de trama actual
   private void argegarFila(){

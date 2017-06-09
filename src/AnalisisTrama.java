@@ -85,7 +85,7 @@ public class AnalisisTrama {
             } else {
                 protocolo = "Ipv4";
                 setVersion(analizadorIP4.version());
-                setHeaderLength(analizadorIP4.getHeaderLength());
+                setHeaderLength(analizadorIP4.hlen());
                 setTos(analizadorIP4.tos());
                 setLength(analizadorIP4.length());
                 setId(analizadorIP4.id());
