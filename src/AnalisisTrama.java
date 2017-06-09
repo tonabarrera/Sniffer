@@ -91,6 +91,7 @@ public class AnalisisTrama {
             //Análisis del IPv4 agregar codigo para el analisis aqui
             if (paqueteActual.getHeader(analizadorIP4).type() == 2) {
                 protocolo = "IGMP";
+                AnalizarIGMP();
             } else {
                 protocolo = "Ipv4";
                 setVersion(analizadorIP4.version());
@@ -138,6 +139,41 @@ public class AnalisisTrama {
         }
         return buf.toString();
     }
+    //Analisis del protocolo IGMP
+    //Analisis de protocolo IGMP
+    private void AnalizarIGMP(){
+        int indiceIGMP = ((paqueteActual.getHeader(analizadorIP4).hlen()*32)/8)+14;
+        byte [] paquete = paqueteActual.getByteArray(indiceIGMP,8);
+        String paqueteS = asString(paqueteActual.getByteArray(indiceIGMP,8));
+        System.out.println(paqueteS);
+        //Analizando el tipo
+        if(paquete[0]==17){
+            tipoIGMP="Consulta";
+        }
+        else if(paquete[0]==18){
+            tipoIGMP="Reporte(IGMPv1)";
+        }
+        else if(paquete[0]==22){
+            tipoIGMP="Reporte(IGMPv2)";
+        }
+        else if(paquete[0]==34){
+            tipoIGMP="Reporte(IGMPv3)";
+        }
+        tiempoRespuesta=(paquete[1]);
+        checksumIGMP = String.format("%02X",paquete[2])+" "+String.format("%02X",paquete[3]);
+
+        grupo="";
+        for(int i=4;i<8;i++){
+            grupo+=paquete[i];
+            if(i!=7){
+                grupo+=".";
+            }
+        }
+        System.out.println("Tipo: "+tipoIGMP+" Tiempo de Respuesta: "+tiempoRespuesta+" Checksum: "+checksumIGMP+" Grupo: "+grupo);
+
+    }
+
+
 
     /*Metodos Auxiliares*/
     //Retorna un String con la fecha y tiempo de captura del paquete
