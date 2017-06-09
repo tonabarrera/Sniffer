@@ -28,6 +28,12 @@ public class AnalisisTrama {
     private int tamaño;
     private String info;
     /*-------Agregar aqui las variable necesarias para cada protocolo-------------*/
+    //Analisis de protocolo IGMP
+    private String tipoIGMP;
+    private byte tiempoRespuesta;
+    private String grupo;
+    private String checksum;
+
   /*Variables para el análisis de protocolos, ordenados por prioridad segun modelo TCP/IP*/
     //Capa Transporte
     private Tcp analizadorTCP;
@@ -66,6 +72,7 @@ public class AnalisisTrama {
       //Análisis del IPv4 agregar codigo para el analisis aqui
         if(paqueteActual.getHeader(analizadorIP4).type()==2){
             protocolo="IGMP";
+            AnalizarIGMP();
         }
         else{
             protocolo = "Ipv4";
@@ -148,6 +155,39 @@ public class AnalisisTrama {
             //System.out.println(ipOrigen + " " + ipDestino);
         }
     }
+
+    //Analisis de protocolo IGMP
+    private void AnalizarIGMP(){
+        int indiceIGMP = ((paqueteActual.getHeader(analizadorIP4).hlen()*32)/8)+14;
+        byte [] paquete = paqueteActual.getByteArray(indiceIGMP,8);
+        String paqueteS = asString(paqueteActual.getByteArray(indiceIGMP,8));
+        System.out.println(paqueteS);
+        //Analizando el tipo
+        if(paquete[0]==17){
+            tipoIGMP="Consulta";
+        }
+        else if(paquete[0]==18){
+            tipoIGMP="Reporte(IGMPv1)";
+        }
+        else if(paquete[0]==22){
+            tipoIGMP="Reporte(IGMPv2)";
+        }
+        else if(paquete[0]==34){
+            tipoIGMP="Reporte(IGMPv3)";
+        }
+        tiempoRespuesta=(paquete[1]);
+        checksum = String.format("%02X",paquete[2])+" "+String.format("%02X",paquete[3]);
+
+        for(int i=4;i<8;i++){
+            grupo+=paquete[i];
+            if(i!=7){
+                grupo+=".";
+            }
+        }
+        System.out.println(tipoIGMP+" "+tiempoRespuesta+" "+checksum+" "+grupo);
+
+    }
+
     private void accederHexadecimal(){
       infoHexadecimal = paqueteActual.getByteArray(0,(paqueteActual.size()));
     }
