@@ -242,15 +242,22 @@ public class Protocolos extends javax.swing.JFrame {
         }
       }
       listaOriginal.setModel(modelo);
-      mostarProtocolo(tramaActual);
+
+      if (tramaActual.getProtocolo().equals("Ipv4")) {
+        mostarProtocoloIPv4(tramaActual);
+      } else if (tramaActual.getProtocolo().equals("UDP")) {
+        mostrarProtocoloUDP(tramaActual);
+      } else if (tramaActual.getProtocolo().equals("TCP")) {
+        mostrarProtocoloTCP(tramaActual);
+      }
     }
   }
 
-  private void mostarProtocolo(AnalisisTrama tramaActual) {
+  private DefaultListModel mostarProtocoloIPv4(AnalisisTrama tramaActual) {
     StringBuilder informacion = new StringBuilder();
     DefaultListModel modelo = new DefaultListModel();
 
-    informacion.append("Protocolo: "+tramaActual.getProtocolo());
+    informacion.append("Protocolo: IPv4");
     modelo.addElement(informacion.toString());
     informacion.setLength(0);
 
@@ -300,7 +307,32 @@ public class Protocolos extends javax.swing.JFrame {
     modelo.addElement(informacion.toString());
     informacion.setLength(0);
 
-    informacion.append(String.format("Header Checksum: 0x%04X\n", tramaActual.getChecksum()));
+    informacion.append(String.format("Header Checksum: 0x%04X", tramaActual.getChecksum()));
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    return modelo;
+  }
+
+  private void mostrarProtocoloUDP(AnalisisTrama tramaActual) {
+    StringBuilder informacion = new StringBuilder();
+    DefaultListModel modelo = new DefaultListModel();
+
+    modelo = mostarProtocoloIPv4(tramaActual);
+
+    informacion.append("Protocolo: UDP");
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    listaAnalisis.setModel(modelo);
+  }
+
+  private void mostrarProtocoloTCP(AnalisisTrama tramaActual) {
+    StringBuilder informacion = new StringBuilder();
+    DefaultListModel modelo = new DefaultListModel();
+
+    modelo = mostarProtocoloIPv4(tramaActual);
+    informacion.append("Protocolo: TCP");
     modelo.addElement(informacion.toString());
     informacion.setLength(0);
 

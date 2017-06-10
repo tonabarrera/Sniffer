@@ -52,6 +52,31 @@ public class AnalisisTrama {
     private int checksum;
     /*Fin de las variables IPv4*/
 
+    /*Varibles para UDP*/
+    private int srcPort; // tambien se usa en TCP
+    private int destPort; // tambien se usa en TCP
+    private int lengthUDP;
+    private int checksumUDP;
+    /*Fin de las variables UDP*/
+
+    /*Variables TCP*/
+    private long seq;
+    private long ack;
+    private int hlenTCP;
+    private int flagsTCP;
+    private boolean flagCWR;
+    private boolean flagECE;
+    private boolean flagURG;
+    private boolean flagACK;
+    private boolean flagPSH;
+    private boolean flagSYN;
+    private boolean flagFIN;
+    private boolean flagRST;
+    private int window;
+    private int checksumTCP;
+    private int urgent;
+    /*Fin de las variables TCP*/
+
     //Capa Fisica
     private byte[] infoHexadecimal;
 
@@ -97,6 +122,32 @@ public class AnalisisTrama {
                 setTtl(analizadorIP4.ttl());
                 setProtocoloId(analizadorIP4.type());
                 setChecksum(analizadorIP4.checksum());
+                if (paqueteActual.hasHeader(analizadorUDP)) {
+                    protocolo = "UDP";
+                    setSrcPort(analizadorUDP.source());
+                    setDestPort(analizadorUDP.destination());
+                    setLengthUDP(analizadorUDP.length());
+                    setChecksumUDP(analizadorUDP.checksum());
+                } else if (paqueteActual.hasHeader(analizadorTCP)) {
+                    protocolo = "TCP";
+                    setSrcPort(analizadorTCP.source());
+                    setDestPort(analizadorTCP.destination());
+                    setSeq(analizadorTCP.seq());
+                    setAck(analizadorTCP.ack());
+                    setHlenTCP(analizadorTCP.hlen());
+                    setFlagsTCP(analizadorTCP.flags());
+                    setFlagACK(analizadorTCP.flags_ACK());
+                    setFlagCWR(analizadorTCP.flags_CWR());
+                    setFlagECE(analizadorTCP.flags_ECE());
+                    setFlagFIN(analizadorTCP.flags_FIN());
+                    setFlagPSH(analizadorTCP.flags_PSH());
+                    setFlagRST(analizadorTCP.flags_RST());
+                    setFlagSYN(analizadorTCP.flags_SYN());
+                    setFlagURG(analizadorTCP.flags_URG());
+                    setWindow(analizadorTCP.window());
+                    setChecksumTCP(analizadorTCP.checksum());
+                    setUrgent(analizadorTCP.urgent());
+                }
             }
 
         } else if (paqueteActual.hasHeader(analizadorIP6)) {
@@ -108,12 +159,6 @@ public class AnalisisTrama {
         } else if (paqueteActual.hasHeader(analizadorARP)) {
             //agregar codigo para el analisis aqui
             protocolo = "ARP";
-        } else if (paqueteActual.hasHeader(analizadorTCP)) {
-            //agregar codigo para el analisis aqui
-            protocolo = "TCP";
-        } else if (paqueteActual.hasHeader((analizadorUDP))) {
-            //agregar codigo para el analisis aqui
-            protocolo = "UDP";
         }
     }
 
@@ -144,10 +189,8 @@ public class AnalisisTrama {
 
     //Asigna la direcciones ipOrigen e ipDestino del paquete
     private void calcularIp() {
-        int[] sIP = new int[4];
-        int[] dIP = new int[4];
-        StringBuilder aux_origen = new StringBuilder();
-        StringBuilder aux_destino = new StringBuilder();
+        StringBuilder aux_src = new StringBuilder();
+        StringBuilder aux_dest = new StringBuilder();
 
         analizadorIP4 = new Ip4();
         if (!paqueteActual.hasHeader(analizadorIP4)) {
@@ -159,22 +202,20 @@ public class AnalisisTrama {
                 ipDestino = "-----";
             }
         } else {
-            for (int i = 0; i < analizadorIP4.source().length; i++) {
-                aux_origen.append(String.valueOf(
-                        (analizadorIP4.source()[i] < 0) ? (analizadorIP4.source()[i] + 256) :
-                                analizadorIP4.source()[i]));
-                aux_destino.append(String.valueOf((analizadorIP4.destination()[i] < 0) ?
-                        (analizadorIP4.destination()[i] + 256) : analizadorIP4.destination()[i]));
-                if (i != analizadorIP4.source().length - 1) {
-                    aux_origen.append(".");
-                    aux_destino.append(".");
-                }
-            }
-            //Evitando usar el toString()
-            ipOrigen = aux_origen.toString();
-            ipDestino = aux_destino.toString();
-            //System.out.println(ipOrigen + " " + ipDestino);
+            ipOrigen = darFormatoIPv4(analizadorIP4.source());
+            ipDestino = darFormatoIPv4(analizadorIP4.destination());
         }
+    }
+
+    private String darFormatoIPv4(final byte[] mac) {
+        final StringBuilder buf = new StringBuilder();
+        for (byte b : mac) {
+            if (buf.length() != 0) {
+                buf.append('.');
+            }
+            buf.append((b < 0) ? b + 256 : b);
+        }
+        return buf.toString();
     }
 
     private void accederHexadecimal() {
@@ -356,5 +397,157 @@ public class AnalisisTrama {
 
     public void setFlagsDesc(String flagsDesc) {
         this.flagsDesc = flagsDesc;
+    }
+
+    public int getSrcPort() {
+        return srcPort;
+    }
+
+    public void setSrcPort(int srcPort) {
+        this.srcPort = srcPort;
+    }
+
+    public int getDestPort() {
+        return destPort;
+    }
+
+    public void setDestPort(int destPort) {
+        this.destPort = destPort;
+    }
+
+    public int getLengthUDP() {
+        return lengthUDP;
+    }
+
+    public void setLengthUDP(int lengthUDP) {
+        this.lengthUDP = lengthUDP;
+    }
+
+    public int getChecksumUDP() {
+        return checksumUDP;
+    }
+
+    public void setChecksumUDP(int checksumUDP) {
+        this.checksumUDP = checksumUDP;
+    }
+
+    public long getSeq() {
+        return seq;
+    }
+
+    public void setSeq(long seq) {
+        this.seq = seq;
+    }
+
+    public long getAck() {
+        return ack;
+    }
+
+    public void setAck(long ack) {
+        this.ack = ack;
+    }
+
+    public int getHlenTCP() {
+        return hlenTCP;
+    }
+
+    public void setHlenTCP(int hlenTCP) {
+        this.hlenTCP = hlenTCP;
+    }
+
+    public int getFlagsTCP() {
+        return flagsTCP;
+    }
+
+    public void setFlagsTCP(int flagsTCP) {
+        this.flagsTCP = flagsTCP;
+    }
+
+    public boolean getFlagCWR() {
+        return flagCWR;
+    }
+
+    public void setFlagCWR(boolean flagCWR) {
+        this.flagCWR = flagCWR;
+    }
+
+    public boolean getFlagECE() {
+        return flagECE;
+    }
+
+    public void setFlagECE(boolean flagECE) {
+        this.flagECE = flagECE;
+    }
+
+    public boolean getFlagURG() {
+        return flagURG;
+    }
+
+    public void setFlagURG(boolean flagURG) {
+        this.flagURG = flagURG;
+    }
+
+    public boolean getFlagACK() {
+        return flagACK;
+    }
+
+    public void setFlagACK(boolean flagACK) {
+        this.flagACK = flagACK;
+    }
+
+    public boolean getFlagPSH() {
+        return flagPSH;
+    }
+
+    public void setFlagPSH(boolean flagPSH) {
+        this.flagPSH = flagPSH;
+    }
+
+    public boolean getFlagRST() {
+        return flagRST;
+    }
+
+    public void setFlagRST(boolean flagRST) {
+        this.flagRST = flagRST;
+    }
+
+    public boolean getFlagSYN() {
+        return flagSYN;
+    }
+
+    public void setFlagSYN(boolean flagSYN) {
+        this.flagSYN = flagSYN;
+    }
+
+    public boolean getFlagFIN() {
+        return flagFIN;
+    }
+
+    public void setFlagFIN(boolean flagFIN) {
+        this.flagFIN = flagFIN;
+    }
+
+    public int getWindow() {
+        return window;
+    }
+
+    public void setWindow(int window) {
+        this.window = window;
+    }
+
+    public int getChecksumTCP() {
+        return checksumTCP;
+    }
+
+    public void setChecksumTCP(int checksumTCP) {
+        this.checksumTCP = checksumTCP;
+    }
+
+    public int getUrgent() {
+        return urgent;
+    }
+
+    public void setUrgent(int urgent) {
+        this.urgent = urgent;
     }
 }
