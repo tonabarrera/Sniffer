@@ -263,8 +263,6 @@ public class Protocolos extends javax.swing.JFrame {
     StringBuilder informacion = new StringBuilder();
     DefaultListModel modelo = new DefaultListModel();
 
-    modelo = mostarProtocoloIPv4(tramaActual);
-
     informacion.append("--- Protocolo: IGMP ---");
     modelo.addElement(informacion.toString());
     informacion.setLength(0);
