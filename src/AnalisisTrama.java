@@ -41,11 +41,16 @@ public class AnalisisTrama {
     private int version;
     private int headerLength;
     private int tos;
+    private int tosCode;
     private int tosECN;
     private int length;
     private int Id;
     private int flags;
-    private String flagsDesc;
+    private int flagReserved;
+    private int flagDF;
+    private int flagMF;
+    private String flagDFDesc;
+    private String flagMFDesc;
     private int offset;
     private int ttl;
     private int protocoloId;
@@ -120,11 +125,16 @@ public class AnalisisTrama {
                 setVersion(analizadorIP4.version());
                 setHeaderLength(analizadorIP4.hlen());
                 setTos(analizadorIP4.tos());
+                setTosCode(analizadorIP4.tos_Codepoint());
                 setTosECN(analizadorIP4.tos_ECN());
                 setLength(analizadorIP4.length());
                 setId(analizadorIP4.id());
                 setFlags(analizadorIP4.flags());
-                setFlagsDesc(analizadorIP4.flags_DFDescription());
+                setFlagReserved(analizadorIP4.flags_Reserved());
+                setFlagDF(analizadorIP4.flags_DF());
+                setFlagMF(analizadorIP4.flags_MF());
+                setFlagDFDesc(analizadorIP4.flags_DFDescription());
+                setFlagMFDesc(analizadorIP4.flags_MFDescription());
                 setTtl(analizadorIP4.ttl());
                 setProtocoloId(analizadorIP4.type());
                 setChecksum(analizadorIP4.checksum());
@@ -431,14 +441,6 @@ public class AnalisisTrama {
         this.tosECN = tosDesc;
     }
 
-    public String getFlagsDesc() {
-        return flagsDesc;
-    }
-
-    public void setFlagsDesc(String flagsDesc) {
-        this.flagsDesc = flagsDesc;
-    }
-
     public int getSrcPort() {
         return srcPort;
     }
@@ -621,5 +623,53 @@ public class AnalisisTrama {
 
     public void setChecksumIGMP(String checksumIGMP) {
         this.checksumIGMP = checksumIGMP;
+    }
+
+    public int getTosCode() {
+        return tosCode;
+    }
+
+    public void setTosCode(int tosCode) {
+        this.tosCode = tosCode;
+    }
+
+    public int getFlagReserved() {
+        return flagReserved;
+    }
+
+    public void setFlagReserved(int flagReserved) {
+        this.flagReserved = flagReserved;
+    }
+
+    public int getFlagDF() {
+        return flagDF;
+    }
+
+    public void setFlagDF(int flagDF) {
+        this.flagDF = flagDF;
+    }
+
+    public int getFlagMF() {
+        return flagMF;
+    }
+
+    public void setFlagMF(int flagMF) {
+        this.flagMF = flagMF;
+    }
+
+    public String getFlagDFDesc() {
+        return flagDFDesc;
+    }
+
+    public void setFlagDFDesc(String flagDFDesc) {
+        this.flagDFDesc = flagDFDesc;
+    }
+
+    public String getFlagMFDesc() {
+        return flagMFDesc;
+    }
+
+    public void setFlagMFDesc(String flagMFDesc) {
+        this.flagMFDesc = flagMFDesc;
     }
 }

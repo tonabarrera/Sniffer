@@ -262,7 +262,7 @@ public class Protocolos extends javax.swing.JFrame {
         StringBuilder informacion = new StringBuilder();
         DefaultListModel modelo = new DefaultListModel();
 
-        informacion.append("--Protocolo: IPv4--");
+        informacion.append("---- Protocolo: IPv4 ----");
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
@@ -277,12 +277,15 @@ public class Protocolos extends javax.swing.JFrame {
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
-        informacion.append(String.format("0x%02X = Type of service: %s", tramaActual.getTos(),
-                tramaActual.getTos()));
+        informacion.append(String.format("Differentiated services: 0x%02X", tramaActual.getTos()));
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
-        informacion.append("Differentiated services: " + tramaActual.getTosECN());
+        informacion.append("Differentiated services Codepoint: " + tramaActual.getTosCode());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Explicit Congestion Notification: " + tramaActual.getTosECN());
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
@@ -299,7 +302,16 @@ public class Protocolos extends javax.swing.JFrame {
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
-        informacion.append("Flags Description:" + tramaActual.getFlagsDesc());
+        informacion.append(String.format("%d... .... = Reserved Bit: %s set\n",
+                tramaActual.getFlagReserved(), (tramaActual.getFlagReserved() == 1 ? "" : "not")));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+        informacion.append(String.format(".%d.. .... = Don't fragment: %s\n",
+                tramaActual.getFlagDF(), tramaActual.getFlagDFDesc()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+        informacion.append(String.format("..%d. .... = More fragments: %s\n",
+                tramaActual.getFlagMF(), tramaActual.getFlagMFDesc()));
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
@@ -324,7 +336,7 @@ public class Protocolos extends javax.swing.JFrame {
 
         modelo = mostarProtocoloIPv4(tramaActual);
 
-        informacion.append("-- Protocolo: UDP --");
+        informacion.append("---- Protocolo: UDP ----");
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
@@ -352,7 +364,83 @@ public class Protocolos extends javax.swing.JFrame {
         DefaultListModel modelo = new DefaultListModel();
 
         modelo = mostarProtocoloIPv4(tramaActual);
-        informacion.append("-- Protocolo: TCP --");
+        informacion.append("---- Protocolo: TCP ----");
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Source port: " + tramaActual.getSrcPort());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Destination port: " + tramaActual.getDestPort());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Secuence number: " + tramaActual.getSeq());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Acknowledgment: " + tramaActual.getAck());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Header length: " + tramaActual.getHlenTCP());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format("Flags: 0x%03X", tramaActual.getFlags()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format(".... %d... .... = CWR: %s",
+                (tramaActual.getFlagCWR() ? 1 : 0), tramaActual.getFlagCWR()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format(".... .%d.. .... = ECN-Echo: %s",
+                (tramaActual.getFlagECE() ? 1 : 0), tramaActual.getFlagECE()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format(".... ..%d. .... = Urgent: %s",
+                (tramaActual.getFlagURG() ? 1 : 0), tramaActual.getFlagURG()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format(".... ...%d .... = Acknowledgment: %s",
+                (tramaActual.getFlagACK() ? 1 : 0), tramaActual.getFlagACK()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format(".... .... %d... = Push: %s",
+                (tramaActual.getFlagPSH() ? 1 : 0), tramaActual.getFlagPSH()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format(".... .... .%d.. = Reset: %s",
+                (tramaActual.getFlagPSH() ? 1 : 0), tramaActual.getFlagRST()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format(".... .... ..%d. = Syn: %s",
+                (tramaActual.getFlagSYN() ? 1 : 0), tramaActual.getFlagSYN()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format(".... .... ...%d = Fin: %s",
+                (tramaActual.getFlagFIN() ? 1 : 0), tramaActual.getFlagFIN()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Window size value: " + tramaActual.getWindow());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format("Checksum: 0x%04X", tramaActual.getChecksumTCP()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Urgent point: " + tramaActual.getUrgent());
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
