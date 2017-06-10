@@ -5,55 +5,58 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Protocolos extends javax.swing.JFrame {
+    /*Declaración de las variable referentes a la capa logica*/
+    //Lista para guardar las tramas recibidas con sus respectivos analisis generados en la clase
+    // Analisis trama
+    private List<AnalisisTrama> analisisTramas;
+    //Variable para manipular la trama con la que se trabaja actualmente, permitirá actualizar la
+    // UI con datos de esta trama
+    private AnalisisTrama tramaActual;
 
-  /*Declaración de las variable referentes a la capa logica*/
-  //Lista para guardar las tramas recibidas con sus respectivos analisis generados en la clase Analisis trama
-  private List<AnalisisTrama> analisisTramas;
-  //Variable para manipular la trama con la que se trabaja actualmente, permitirá actualizar la UI con datos de esta trama
-  private AnalisisTrama tramaActual;
+    /*Variables usadas para la conexión a Pcap
+    * Estas variables se obtienen mediante los parametros ingresados por el usuario en el frame
+    * Launch2*/
+    //Interfaz seleccionada
+    private PcapIf deviceSelected;
+    //Define si la captura de paquetes se realizará mediante una interfaz de red o un archivo
+    private boolean isFile;
+    //Define si se ignora el campo numPaquetes
+    private boolean isInfinite;
+    //Timeout seleccionado por el usuario
+    private int timeout;
+    //Define el numero de paquetes que se desean capturar
+    private int numPaquetes;
+    //Contiene el filtro especificado por el usuario
+    private String filtro;
+    //Nombre del archivo a leer para obtener los paquetes, usado solo si isFile=true
+    private String nombreArchivo;
+    //Variable para capturar cualquier error e imprimirlo como un String
+    private StringBuilder errbuf = new StringBuilder();
 
-  /*Variables usadas para la conexión a Pcap
-  * Estas variables se obtienen mediante los parametros ingresados por el usuario en el frame Launch2*/
-  //Interfaz seleccionada
-  private PcapIf deviceSelected;
-  //Define si la captura de paquetes se realizará mediante una interfaz de red o un archivo
-  private boolean isFile;
-  //Define si se ignora el campo numPaquetes
-  private boolean isInfinite;
-  //Timeout seleccionado por el usuario
-  private int timeout;
-  //Define el numero de paquetes que se desean capturar
-  private int numPaquetes;
-  //Contiene el filtro especificado por el usuario
-  private String filtro;
-  //Nombre del archivo a leer para obtener los paquetes, usado solo si isFile=true
-  private String nombreArchivo;
-  //Variable para capturar cualquier error e imprimirlo como un String
-  private StringBuilder errbuf = new StringBuilder();
+    /*Variables para conectar la UI con las clases logicas que reciben y analizan paquetes */
+    //Instancia con los metodos para conexion, y captura de paquetes
+    private CapturaTramas capturador;
+    //Variable para controlar el estado de recepcion/pausa de paquetes
+    private boolean isReceiving;
 
-  /*Variables para conectar la UI con las clases logicas que reciben y analizan paquetes */
-  //Instancia con los metodos para conexion, y captura de paquetes
-  private CapturaTramas capturador;
-  //Variable para controlar el estado de recepcion/pausa de paquetes
-  private boolean isReceiving;
-
-  //Contructor con los params recibidos del frame anterior
-  public Protocolos(PcapIf deviceSelected, int timeout, int numPaquetes, boolean isFile, boolean isInfinite, String filtro, String nombreArchivo) {
+    //Contructor con los params recibidos del frame anterior
+    public Protocolos(PcapIf deviceSelected, int timeout, int numPaquetes, boolean isFile,
+            boolean isInfinite, String filtro, String nombreArchivo) {
 
     /*Recibiendo los parametros del frame anterior*/
-    analisisTramas =  new LinkedList<>();
-    this.deviceSelected =  deviceSelected;
-    this.isFile =  isFile;
-    this.isInfinite = isInfinite;
-    this.filtro =  filtro;
-    this.timeout = timeout;
-    this.numPaquetes = numPaquetes;
-    this.nombreArchivo =  nombreArchivo;
-    this.isReceiving = false;
+        analisisTramas = new LinkedList<>();
+        this.deviceSelected = deviceSelected;
+        this.isFile = isFile;
+        this.isInfinite = isInfinite;
+        this.filtro = filtro;
+        this.timeout = timeout;
+        this.numPaquetes = numPaquetes;
+        this.nombreArchivo = nombreArchivo;
+        this.isReceiving = false;
 
     /*Creando la UI*/
-    initComponents();
-  }
+        initComponents();
+    }
 
   /*Seccion para la creación de la UI, esta sección no debe ser modificada salvo casos muy específicos*/
   private void initComponents() {
@@ -204,227 +207,231 @@ public class Protocolos extends javax.swing.JFrame {
   }
   /*Fin de la creación de la UI*/
 
-  /*Sección para agregar los Event Listeners correspondientes*/
-  //Boton - Iniciar: Comienza o termina la recepción de paquetes
-  private void btnIniciarActionPerformed(java.awt.event.ActionEvent evt) {
-    //Iniciando la recepción de paquetes
-    if(isReceiving == false){
-      //Generando conexión con pcap
-      capturador =  new CapturaTramas(deviceSelected.getName(),(64*1024),timeout,filtro);
-      capturador.conectarPcap();
-      //Capturando los paquetes mediante el uso de un thread independiente para esto
-      AdministradorPaquetes administradorPaquetes =  new AdministradorPaquetes();
-      administradorPaquetes.start();
-      //Realizando un toggle
-      isReceiving =  true;
-    }else{
-      //Pausando la obtención de paquetes, mediante el cierre de la conexión
-      capturador.pausarObtenecion();
+    /*Sección para agregar los Event Listeners correspondientes*/
+    //Boton - Iniciar: Comienza o termina la recepción de paquetes
+    private void btnIniciarActionPerformed(java.awt.event.ActionEvent evt) {
+        //Iniciando la recepción de paquetes
+        if (!isReceiving) {
+            //Generando conexión con pcap
+            capturador = new CapturaTramas(deviceSelected.getName(), (64 * 1024), timeout, filtro);
+            capturador.conectarPcap();
+            //Capturando los paquetes mediante el uso de un thread independiente para esto
+            AdministradorPaquetes administradorPaquetes = new AdministradorPaquetes();
+            administradorPaquetes.start();
+            //Realizando un toggle
+            isReceiving = true;
+        } else {
+            //Pausando la obtención de paquetes, mediante el cierre de la conexión
+            capturador.pausarObtenecion();
+        }
     }
-  }
-  //Obteniendo la información de una trama
-  private void getTrama(java.awt.event.MouseEvent evt) {
-    System.out.println("ouch");
-    int indiceTrama = tablaPaquetes.getSelectedRow();
-    //Mostrando información
-    if(indiceTrama > 0){
-      AnalisisTrama tramaActual = analisisTramas.get(indiceTrama-1);
-      //Llenando lista con la información en hexadecimal de la trama
-      byte[] informacionOriginal = tramaActual.getInfoHexadecimal();
-      StringBuilder hexadecimal =  new StringBuilder();
-      DefaultListModel modelo = new DefaultListModel();
 
-      for(int i = 0; i < informacionOriginal.length; i++){
-        hexadecimal.append(String.format("%02X ", informacionOriginal[i]));
-        if(i % 10 == 0 && i > 0){
-          modelo.addElement(hexadecimal.toString());
-          hexadecimal.setLength(0);
+    //Obteniendo la información de una trama
+    private void getTrama(java.awt.event.MouseEvent evt) {
+        System.out.println("ouch");
+        int indiceTrama = tablaPaquetes.getSelectedRow();
+        //Mostrando información
+        if (indiceTrama > 0) {
+            AnalisisTrama tramaActual = analisisTramas.get(indiceTrama - 1);
+            //Llenando lista con la información en hexadecimal de la trama
+            byte[] informacionOriginal = tramaActual.getInfoHexadecimal();
+            StringBuilder hexadecimal = new StringBuilder();
+            DefaultListModel modelo = new DefaultListModel();
+
+            for (int i = 0; i < informacionOriginal.length; i++) {
+                hexadecimal.append(String.format("%02X ", informacionOriginal[i]));
+                if (i % 10 == 0 && i > 0) {
+                    modelo.addElement(hexadecimal.toString());
+                    hexadecimal.setLength(0);
+                }
+            }
+            listaOriginal.setModel(modelo);
+
+            if (tramaActual.getProtocolo().equals("Ipv4")) {
+                mostarProtocoloIPv4(tramaActual);
+            } else if (tramaActual.getProtocolo().equals("UDP")) {
+                mostrarProtocoloUDP(tramaActual);
+            } else if (tramaActual.getProtocolo().equals("TCP")) {
+                mostrarProtocoloTCP(tramaActual);
+            }
         }
-      }
-      listaOriginal.setModel(modelo);
-
-      if (tramaActual.getProtocolo().equals("Ipv4")) {
-        mostarProtocoloIPv4(tramaActual);
-      } else if (tramaActual.getProtocolo().equals("UDP")) {
-        mostrarProtocoloUDP(tramaActual);
-      } else if (tramaActual.getProtocolo().equals("TCP")) {
-        mostrarProtocoloTCP(tramaActual);
-      }
     }
-  }
 
-  private DefaultListModel mostarProtocoloIPv4(AnalisisTrama tramaActual) {
-    StringBuilder informacion = new StringBuilder();
-    DefaultListModel modelo = new DefaultListModel();
+    private DefaultListModel mostarProtocoloIPv4(AnalisisTrama tramaActual) {
+        StringBuilder informacion = new StringBuilder();
+        DefaultListModel modelo = new DefaultListModel();
 
-    informacion.append("Protocolo: IPv4");
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
+        informacion.append("Protocolo: IPv4");
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
 
-    informacion.append(String.format("0%s .... = Version: %d",
-            Integer.toBinaryString(tramaActual.getVersion()),
-            tramaActual.getVersion()));
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
+        informacion.append(String.format("0%s .... = Version: %d",
+                Integer.toBinaryString(tramaActual.getVersion()), tramaActual.getVersion()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
 
-    informacion.append(String.format(".... 0%s = Header length: %d bytes (%X)",
-            Integer.toBinaryString(tramaActual.getHeaderLength()), tramaActual.getHeaderLength()*4,
-            tramaActual.getHeaderLength()));
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
+        informacion.append(String.format(".... 0%s = Header length: %d bytes (%X)",
+                Integer.toBinaryString(tramaActual.getHeaderLength()),
+                tramaActual.getHeaderLength() * 4, tramaActual.getHeaderLength()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
 
-    informacion.append(String.format("0x%02X = Type of service: %s", tramaActual.getTos(),
-            tramaActual.getTos()));
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
+        informacion.append(String.format("0x%02X = Type of service: %s", tramaActual.getTos(),
+                tramaActual.getTos()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
 
-    informacion.append("Differentiated services: " + tramaActual.getTosECN());
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
+        informacion.append("Differentiated services: " + tramaActual.getTosECN());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
 
-    informacion.append("Total Length: " + tramaActual.getLength());
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
+        informacion.append("Total Length: " + tramaActual.getLength());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
 
-    informacion.append(String.format("Identifier: 0x%04X (%d)\n", tramaActual.getId(), tramaActual
-            .getId()));
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
+        informacion.append(String.format("Identifier: 0x%04X (%d)\n", tramaActual.getId(),
+                tramaActual.getId()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
 
-    informacion.append(String.format("Flags: 0x%02X", tramaActual.getFlags()));
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
+        informacion.append(String.format("Flags: 0x%02X", tramaActual.getFlags()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
 
-    informacion.append("Flags Description:"+ tramaActual.getFlagsDesc());
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
+        informacion.append("Flags Description:" + tramaActual.getFlagsDesc());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
 
-    informacion.append("Fragment Offset: " + tramaActual.getOffset());
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
+        informacion.append("Fragment Offset: " + tramaActual.getOffset());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
 
-    informacion.append("Time to live: " + tramaActual.getTtl());
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
+        informacion.append("Time to live: " + tramaActual.getTtl());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
 
-    informacion.append(String.format("Header Checksum: 0x%04X", tramaActual.getChecksum()));
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
+        informacion.append(String.format("Header Checksum: 0x%04X", tramaActual.getChecksum()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
 
-    return modelo;
-  }
+        return modelo;
+    }
 
-  private void mostrarProtocoloUDP(AnalisisTrama tramaActual) {
-    StringBuilder informacion = new StringBuilder();
-    DefaultListModel modelo = new DefaultListModel();
+    private void mostrarProtocoloUDP(AnalisisTrama tramaActual) {
+        StringBuilder informacion = new StringBuilder();
+        DefaultListModel modelo = new DefaultListModel();
 
-    modelo = mostarProtocoloIPv4(tramaActual);
+        modelo = mostarProtocoloIPv4(tramaActual);
 
-    informacion.append("Protocolo: UDP");
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
+        informacion.append("Protocolo: UDP");
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
 
-    listaAnalisis.setModel(modelo);
-  }
+        listaAnalisis.setModel(modelo);
+    }
 
-  private void mostrarProtocoloTCP(AnalisisTrama tramaActual) {
-    StringBuilder informacion = new StringBuilder();
-    DefaultListModel modelo = new DefaultListModel();
+    private void mostrarProtocoloTCP(AnalisisTrama tramaActual) {
+        StringBuilder informacion = new StringBuilder();
+        DefaultListModel modelo = new DefaultListModel();
 
-    modelo = mostarProtocoloIPv4(tramaActual);
-    informacion.append("Protocolo: TCP");
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
+        modelo = mostarProtocoloIPv4(tramaActual);
+        informacion.append("Protocolo: TCP");
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
 
-    listaAnalisis.setModel(modelo);
-  }
+        listaAnalisis.setModel(modelo);
+    }
 
-  /*Declaración de metodos de utilería en la aplicación*/
-  //Metodo para agregar una fila a la JTable, la fila se llena con los valores de trama actual
-  private void argegarFila(){
-    DefaultTableModel modelo = (DefaultTableModel) tablaPaquetes.getModel();
-    /*{numero, tiempo, ipOrigen, ipDestino, Protocolo, Tamaño, Info}*/
-    String[]datosPaquete =  {String.valueOf(tramaActual.getNumero()),
-                              tramaActual.getTiempo(),tramaActual.getIpOrigen(),
-                              tramaActual.getIpDestino(),tramaActual.getProtocolo(),
-                              String.valueOf(tramaActual.getTamaño()), tramaActual.getInfo()};
-    modelo.addRow(datosPaquete);
-  }
+    /*Declaración de metodos de utilería en la aplicación*/
+    //Metodo para agregar una fila a la JTable, la fila se llena con los valores de trama actual
+    private void argegarFila() {
+        DefaultTableModel modelo = (DefaultTableModel) tablaPaquetes.getModel();
+        /*{numero, tiempo, ipOrigen, ipDestino, Protocolo, Tamaño, Info}*/
+        String[] datosPaquete = {String.valueOf(tramaActual.getNumero()), tramaActual.getTiempo(),
+                tramaActual.getIpOrigen(), tramaActual.getIpDestino(), tramaActual.getProtocolo(),
+                String.valueOf(tramaActual.getTamaño()), tramaActual.getInfo()};
+        modelo.addRow(datosPaquete);
+    }
 
-  /*Clase Administrador de Paquetes
-  * Esta clase permitirá tener un thread destinado unicamente a la recepción de paquetes,
-  * de esta manera el thread principal del frame no se ve afectado en su performance
-  * */
-  class AdministradorPaquetes extends Thread{
-    public void run(){
-      //Validamos la opcion de conexión elegida
-      if(!isInfinite){
-        //Opción: Número de paquetes
-        for(int i = 0; i < numPaquetes; i++){
-          tramaActual = capturador.obtenerPaquete();
-          tramaActual.setNumero(i);
-          tramaActual.analizarPaquete();
-          analisisTramas.add(tramaActual);
-          //Guardar datos en la tabla
-          argegarFila();
-          //guardar en la lista
-        }
-      }else{
-        //Opción: Bucle Infinito
-        int i = 0;
-        while(isInfinite){
-            tramaActual = capturador.obtenerPaquete();
-            tramaActual.setNumero(i);
-            tramaActual.analizarPaquete();
-            analisisTramas.add(tramaActual);
-            //Guardar datos en la tabla
-            argegarFila();
-            //guardar en la lista
-          i++;
-        }
-      }
-    }//run()
-  }//clase Adminsitrador paquetes
+    /*Clase Administrador de Paquetes
+    * Esta clase permitirá tener un thread destinado unicamente a la recepción de paquetes,
+    * de esta manera el thread principal del frame no se ve afectado en su performance
+    * */
+    class AdministradorPaquetes extends Thread {
+        public void run() {
+            //Validamos la opcion de conexión elegida
+            if (!isInfinite) {
+                //Opción: Número de paquetes
+                for (int i = 0; i < numPaquetes; i++) {
+                    tramaActual = capturador.obtenerPaquete();
+                    tramaActual.setNumero(i);
+                    tramaActual.analizarPaquete();
+                    analisisTramas.add(tramaActual);
+                    //Guardar datos en la tabla
+                    argegarFila();
+                    //guardar en la lista
+                }
+            } else {
+                //Opción: Bucle Infinito
+                int i = 0;
+                while (isInfinite) {
+                    tramaActual = capturador.obtenerPaquete();
+                    tramaActual.setNumero(i);
+                    tramaActual.analizarPaquete();
+                    analisisTramas.add(tramaActual);
+                    //Guardar datos en la tabla
+                    argegarFila();
+                    //guardar en la lista
+                    i++;
+                }
+            }
+        }//run()
+    }//clase Adminsitrador paquetes
 
-  /*Aregando el look and feel nimbus*/
-  public static void main(String args[]) {
+    /*Aregando el look and feel nimbus*/
+    public static void main(String args[]) {
         /* Set the Nimbus look and feel */
-    try {
-      for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-        if ("Nimbus".equals(info.getName())) {
-          javax.swing.UIManager.setLookAndFeel(info.getClassName());
-          break;
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager
+                    .getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(Protocolos.class.getName()).log(
+                    java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(Protocolos.class.getName()).log(
+                    java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(Protocolos.class.getName()).log(
+                    java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Protocolos.class.getName()).log(
+                    java.util.logging.Level.SEVERE, null, ex);
         }
-      }
-    } catch (ClassNotFoundException ex) {
-      java.util.logging.Logger.getLogger(Protocolos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-    } catch (InstantiationException ex) {
-      java.util.logging.Logger.getLogger(Protocolos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-    } catch (IllegalAccessException ex) {
-      java.util.logging.Logger.getLogger(Protocolos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-    } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-      java.util.logging.Logger.getLogger(Protocolos.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
     }
-  }
 
-  //Variables para UI
-  private javax.swing.JToggleButton btnIniciar;
-  private javax.swing.JLabel jLabel1;
-  private javax.swing.JLabel jLabel2;
-  private javax.swing.JLabel jLabel3;
-  private javax.swing.JLabel jLabel4;
-  private javax.swing.JLabel jLabel5;
-  private javax.swing.JMenu jMenu1;
-  private javax.swing.JMenu jMenu2;
-  private javax.swing.JMenuBar jMenuBar1;
-  private javax.swing.JScrollPane jScrollPane1;
-  private javax.swing.JScrollPane jScrollPane2;
-  private javax.swing.JScrollPane jScrollPane3;
-  private javax.swing.JSeparator jSeparator1;
-  private javax.swing.JSeparator jSeparator2;
-  private javax.swing.JList listaAnalisis;
-  private javax.swing.JList listaOriginal;
-  private javax.swing.JTable tablaPaquetes;
-  private javax.swing.JTextField txtFiltro;
-  // End of variables declaration
+    //Variables para UI
+    private javax.swing.JToggleButton btnIniciar;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JList listaAnalisis;
+    private javax.swing.JList listaOriginal;
+    private javax.swing.JTable tablaPaquetes;
+    private javax.swing.JTextField txtFiltro;
+    // End of variables declaration
 }
