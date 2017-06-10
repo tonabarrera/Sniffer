@@ -111,7 +111,7 @@ public class Protocolos extends javax.swing.JFrame {
     jLabel4.setText("Análisis");
 
     listaAnalisis.setModel(new javax.swing.AbstractListModel() {
-      String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+      String[] strings = { " ", " ", " ", " ", " " };
       public int getSize() { return strings.length; }
       public Object getElementAt(int i) { return strings[i]; }
     });
@@ -254,10 +254,101 @@ public class Protocolos extends javax.swing.JFrame {
                 mostrarProtocoloUDP(tramaActual);
             } else if (tramaActual.getProtocolo().equals("TCP")) {
                 mostrarProtocoloTCP(tramaActual);
+            }else if(tramaActual.getProtocolo().equals("IGMP")){
+              mostrarProtocoloIGMP(tramaActual);
             }
         }
     }
+  private void mostrarProtocoloIGMP(AnalisisTrama tramaActual){
+    StringBuilder informacion = new StringBuilder();
+    DefaultListModel modelo = new DefaultListModel();
 
+    informacion.append("--- Protocolo: IGMP ---");
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append(String.format("0x%02X .... = Tipo: %s", tramaActual.getTipoIGMPbyte(),tramaActual.getTipoIGMP()));
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append("Tiempo Max de Respuesta: " + tramaActual.getTiempoRespuesta()+" ds");
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append("Checksum: "+ tramaActual.getChecksumIGMP());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append("Grupo: " + tramaActual.getGrupo());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    listaAnalisis.setModel(modelo);
+
+  }
+  private void mostarProtocolo(AnalisisTrama tramaActual) {
+    StringBuilder informacion = new StringBuilder();
+    DefaultListModel modelo = new DefaultListModel();
+
+    informacion.append("Protocolo: "+tramaActual.getProtocolo());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append(String.format("0%s .... = Version: %d",
+            Integer.toBinaryString(tramaActual.getVersion()),
+            tramaActual.getVersion()));
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append(String.format(".... 0%s = Header length: %d bytes (%X)",
+            Integer.toBinaryString(tramaActual.getHeaderLength()), tramaActual.getHeaderLength()*4,
+            tramaActual.getHeaderLength()));
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append(String.format("0x%02X = Type of service: %s", tramaActual.getTos(),
+            tramaActual.getTos()));
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append("Differentiated services: " + tramaActual.getTosECN());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append("Total Length: " + tramaActual.getLength());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append(String.format("Identifier: 0x%04X (%d)\n", tramaActual.getId(), tramaActual
+            .getId()));
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append(String.format("Flags: 0x%02X", tramaActual.getFlags()));
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    // Este bloque ya no lo uso
+    //informacion.append("Flags Description:"+ tramaActual.getFlagsDesc());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append("Fragment Offset: " + tramaActual.getOffset());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append("Time to live: " + tramaActual.getTtl());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append(String.format("Header Checksum: 0x%04X\n", tramaActual.getChecksum()));
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    listaAnalisis.setModel(modelo);
+  }
+  /*Declaración de metodos de utilería en la aplicación*/
+  /*Retorno el modelo para seguir modificandola ya que casi T0DO es ipv4*/
     private DefaultListModel mostarProtocoloIPv4(AnalisisTrama tramaActual) {
         StringBuilder informacion = new StringBuilder();
         DefaultListModel modelo = new DefaultListModel();

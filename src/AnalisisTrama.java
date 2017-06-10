@@ -83,6 +83,7 @@ public class AnalisisTrama {
     /*Fin de las variables TCP*/
     //Variables IGMP
     private String tipoIGMP;
+    private byte tipoIGMPbyte;
     private byte tiempoRespuesta;
     private String grupo;
     private String checksumIGMP;
@@ -194,12 +195,10 @@ public class AnalisisTrama {
     }
 
     //Analisis del protocolo IGMP
-    //Analisis de protocolo IGMP
-    private void AnalizarIGMP() {
-        int indiceIGMP = ((paqueteActual.getHeader(analizadorIP4).hlen() * 32) / 8) + 14;
-        byte[] paquete = paqueteActual.getByteArray(indiceIGMP, 8);
-        String paqueteS = asString(paqueteActual.getByteArray(indiceIGMP, 8));
-        System.out.println(paqueteS);
+    private void AnalizarIGMP(){
+        int indiceIGMP = ((paqueteActual.getHeader(analizadorIP4).hlen()*32)/8)+14;
+        byte [] paquete = paqueteActual.getByteArray(indiceIGMP,8);
+        tipoIGMPbyte=paquete[0];
         //Analizando el tipo
         if (paquete[0] == 17) {
             tipoIGMP = "Consulta";
@@ -220,10 +219,7 @@ public class AnalisisTrama {
                 grupo += ".";
             }
         }
-        System.out.println(
-                "Tipo: " + tipoIGMP + " Tiempo de Respuesta: " + tiempoRespuesta + " Checksum: "
-                        + checksumIGMP + " Grupo: " + grupo);
-
+        System.out.println("IGMP");
     }
 
 
@@ -671,5 +667,13 @@ public class AnalisisTrama {
 
     public void setFlagMFDesc(String flagMFDesc) {
         this.flagMFDesc = flagMFDesc;
+    }
+
+    public byte getTipoIGMPbyte() {
+        return tipoIGMPbyte;
+    }
+
+    public void setTipoIGMPbyte(byte tipoIGMPbyte) {
+        this.tipoIGMPbyte = tipoIGMPbyte;
     }
 }
