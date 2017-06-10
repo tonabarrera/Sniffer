@@ -108,7 +108,7 @@ public class Protocolos extends javax.swing.JFrame {
     jLabel4.setText("Análisis");
 
     listaAnalisis.setModel(new javax.swing.AbstractListModel() {
-      String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+      String[] strings = { " ", " ", " ", " ", " " };
       public int getSize() { return strings.length; }
       public Object getElementAt(int i) { return strings[i]; }
     });
@@ -227,25 +227,56 @@ public class Protocolos extends javax.swing.JFrame {
     System.out.println("ouch");
     int indiceTrama = tablaPaquetes.getSelectedRow();
     //Mostrando información
-    if(indiceTrama > 0){
-      AnalisisTrama tramaActual = analisisTramas.get(indiceTrama-1);
+    if (indiceTrama > 0) {
+      AnalisisTrama tramaActual = analisisTramas.get(indiceTrama - 1);
       //Llenando lista con la información en hexadecimal de la trama
       byte[] informacionOriginal = tramaActual.getInfoHexadecimal();
-      StringBuilder hexadecimal =  new StringBuilder();
+      StringBuilder hexadecimal = new StringBuilder();
       DefaultListModel modelo = new DefaultListModel();
 
-      for(int i = 0; i < informacionOriginal.length; i++){
+      for (int i = 0; i < informacionOriginal.length; i++) {
         hexadecimal.append(String.format("%02X ", informacionOriginal[i]));
-        if(i % 10 == 0 && i > 0){
+        if (i % 10 == 0 && i > 0) {
           modelo.addElement(hexadecimal.toString());
           hexadecimal.setLength(0);
         }
       }
       listaOriginal.setModel(modelo);
-      mostarProtocolo(tramaActual);
+      if (tramaActual.getProtocolo().equals("IGMP")){
+        mostrarProtocoloIGMP(tramaActual);
+      }else {
+        mostarProtocolo(tramaActual);
+      }
     }
   }
 
+  private void mostrarProtocoloIGMP(AnalisisTrama tramaActual){
+    StringBuilder informacion = new StringBuilder();
+    DefaultListModel modelo = new DefaultListModel();
+
+    informacion.append("Protocolo: "+tramaActual.getProtocolo());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append(String.format("0x%02X .... = Tipo: %s", tramaActual.getTipoIGMPbyte(),tramaActual.getTipoIGMP()));
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append("Tiempo Max de Respuesta: " + tramaActual.getTiempoRespuesta()+" ds");
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append("Checksum: "+ tramaActual.getChecksumIGMP());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    informacion.append("Grupo: " + tramaActual.getGrupo());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    listaAnalisis.setModel(modelo);
+
+  }
   private void mostarProtocolo(AnalisisTrama tramaActual) {
     StringBuilder informacion = new StringBuilder();
     DefaultListModel modelo = new DefaultListModel();
@@ -306,7 +337,6 @@ public class Protocolos extends javax.swing.JFrame {
 
     listaAnalisis.setModel(modelo);
   }
-
   /*Declaración de metodos de utilería en la aplicación*/
   //Metodo para agregar una fila a la JTable, la fila se llena con los valores de trama actual
   private void argegarFila(){

@@ -54,6 +54,7 @@ public class AnalisisTrama {
 
     //Variables IGMP
     private String tipoIGMP;
+    private byte tipoIGMPbyte;
     private byte tiempoRespuesta;
     private String grupo;
     private String checksumIGMP;
@@ -144,8 +145,9 @@ public class AnalisisTrama {
     private void AnalizarIGMP(){
         int indiceIGMP = ((paqueteActual.getHeader(analizadorIP4).hlen()*32)/8)+14;
         byte [] paquete = paqueteActual.getByteArray(indiceIGMP,8);
-        String paqueteS = asString(paqueteActual.getByteArray(indiceIGMP,8));
-        System.out.println(paqueteS);
+        //String paqueteS = asString(paqueteActual.getByteArray(indiceIGMP,8));
+        //System.out.println(paqueteS);
+        tipoIGMPbyte=paquete[0];
         //Analizando el tipo
         if(paquete[0]==17){
             tipoIGMP="Consulta";
@@ -431,5 +433,13 @@ public class AnalisisTrama {
 
     public void setChecksumIGMP(String checksumIGMP) {
         this.checksumIGMP = checksumIGMP;
+    }
+
+    public byte getTipoIGMPbyte() {
+        return tipoIGMPbyte;
+    }
+
+    public void setTipoIGMPbyte(byte tipoIGMPbyte) {
+        this.tipoIGMPbyte = tipoIGMPbyte;
     }
 }
