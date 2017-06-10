@@ -8,6 +8,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import static javax.swing.JOptionPane.*;
+
 public class Launch2 extends javax.swing.JFrame {
 
   //Variables disponibles en todas mis vistas
@@ -179,7 +181,18 @@ public class Launch2 extends javax.swing.JFrame {
     btnComenzar.setText("Comenzar");
     btnComenzar.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        btnComenzarActionPerformed(evt);
+        if (rdAire.isSelected() || rdArchivo.isSelected()) {
+          if(rdAire.isSelected() && listInterfaces.isSelectionEmpty()){
+            JOptionPane.showMessageDialog(null,"Selecciona una interfaz de red","Error",ERROR_MESSAGE);
+          }
+          else{
+            btnComenzarActionPerformed(evt);
+          }
+        }
+        else{
+          JOptionPane.showMessageDialog(null,"Selecciona un modo de captura","Error",ERROR_MESSAGE);
+        }
+
       }
     });
     jLabel4.setText("Filtro:");
@@ -493,11 +506,21 @@ public class Launch2 extends javax.swing.JFrame {
     isInfinite = jcbInfinite.isSelected();
     filtro = jTextField1.getText();
     numPaquetes = (int)jTextField3.getValue();
+    //Poniendo por default 100 paquetes capturados
+    if(numPaquetes==0){
+      numPaquetes=100;
+    }
     //viendo el timeout con segundos o milisegundos
     timeout = (int)jTextField2.getValue();
     if(jcbSegundos.getSelectedIndex()==0) {
       //milisegundos
-      timeout = timeout * 1000;
+     //Poniendo por default 10 segundos
+      if(timeout==0){
+       timeout=10000; //10 segundos
+      }
+      else {
+        timeout = timeout * 1000;
+      }
     }
     System.out.println("filtro: "+filtro+" INFINITE: "+isInfinite+" isFile: "+isFile+" timeout: "+timeout+" num: "+numPaquetes+
     " nombreArchivo: "+nombreArchivo);
