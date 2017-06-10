@@ -249,6 +249,7 @@ public class Protocolos extends javax.swing.JFrame {
 
             if (tramaActual.getProtocolo().equals("Ipv4")) {
                 mostarProtocoloIPv4(tramaActual);
+                listaAnalisis.setModel(modelo);
             } else if (tramaActual.getProtocolo().equals("UDP")) {
                 mostrarProtocoloUDP(tramaActual);
             } else if (tramaActual.getProtocolo().equals("TCP")) {
@@ -261,7 +262,7 @@ public class Protocolos extends javax.swing.JFrame {
         StringBuilder informacion = new StringBuilder();
         DefaultListModel modelo = new DefaultListModel();
 
-        informacion.append("Protocolo: IPv4");
+        informacion.append("--Protocolo: IPv4--");
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
@@ -323,7 +324,23 @@ public class Protocolos extends javax.swing.JFrame {
 
         modelo = mostarProtocoloIPv4(tramaActual);
 
-        informacion.append("Protocolo: UDP");
+        informacion.append("-- Protocolo: UDP --");
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Source port: " + tramaActual.getSrcPort());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Destination port: " + tramaActual.getDestPort());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Length: " + tramaActual.getLengthUDP());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format("Checksum: 0x%04X", tramaActual.getChecksumUDP()));
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
@@ -335,7 +352,7 @@ public class Protocolos extends javax.swing.JFrame {
         DefaultListModel modelo = new DefaultListModel();
 
         modelo = mostarProtocoloIPv4(tramaActual);
-        informacion.append("Protocolo: TCP");
+        informacion.append("-- Protocolo: TCP --");
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
