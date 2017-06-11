@@ -213,8 +213,13 @@ public class Protocolos extends javax.swing.JFrame {
         //Iniciando la recepción de paquetes
         //Lectura de archivo
         if(isFile){
+          System.out.println("Iniciando con archivo");
           capturador =  new CapturaTramas(nombreArchivo);
+          capturador.conectarPcap();
+          AdministradorPaquetes administradorPaquetes = new AdministradorPaquetes();
+          administradorPaquetes.start();
         }else{
+          System.out.println("Iniciando con captura al aire");
           //Captura al aire
           if (!isReceiving) {
             //Generando conexión con pcap

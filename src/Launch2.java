@@ -8,7 +8,8 @@ import org.jnetpcap.PcapIf;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import java.io.File;
+import java.io.*;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -386,74 +387,6 @@ public class Launch2 extends javax.swing.JFrame {
         pgConfiguracion.setValue(progresoConfiguracion);
     }
 
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Launch2.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Launch2.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Launch2.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Launch2.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-        //</editor-fold>
-
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Launch2().setVisible(true);
-            }
-        });
-    }
-
-    // Variables declaration - do not modify
-    private javax.swing.JButton btnComenzar;
-    private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JFileChooser fcPaquetes;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JSeparator jSeparator3;
-    private javax.swing.JSeparator jSeparator4;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JFormattedTextField jTextField2;
-    private javax.swing.JFormattedTextField jTextField3;
-    private javax.swing.JCheckBox jcbInfinite;
-    private javax.swing.JComboBox jcbSegundos;
-    private javax.swing.JLabel lblConfiguracion;
-    private javax.swing.JLabel lblEscom;
-    private javax.swing.JLabel lblTitulo;
-    private javax.swing.JList listInterfaces;
-    private javax.swing.JProgressBar pgConfiguracion;
-    private javax.swing.JRadioButton rdAire;
-    private javax.swing.JRadioButton rdArchivo;
-    private javax.swing.JTabbedPane tpFuentePaquetes;
-    private javax.swing.JFormattedTextField txBytes;
-    // End of variables declaration
 
     private static String asString(final byte[] mac) {
         final StringBuilder buf = new StringBuilder();
@@ -509,10 +442,33 @@ public class Launch2 extends javax.swing.JFrame {
 
     /*Metodo usado para obtener la ruta de un archivo que sera usado por Pcap para analizar sus paquetes*/
     private void fileSelection(java.awt.event.ActionEvent evt) {
-        File archivo = fcPaquetes.getSelectedFile();
-        nombreArchivo = archivo.getName();
+      File archivo = fcPaquetes.getSelectedFile();
+      nombreArchivo = "temp.pcap";
+
+      File receptor  =  new File("temp.pcap");
+      try {
+        copyFileUsingStream(archivo,receptor);
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
     }
 
+    private static void copyFileUsingStream(File source, File dest) throws IOException {
+    InputStream is = null;
+    OutputStream os = null;
+    try {
+      is = new FileInputStream(source);
+      os = new FileOutputStream(dest);
+      byte[] buffer = new byte[1024];
+      int length;
+      while ((length = is.read(buffer)) > 0) {
+        os.write(buffer, 0, length);
+      }
+    } finally {
+      is.close();
+      os.close();
+    }
+  }
     /*Metodo para recopilar los datos finales de configuración y pasar al siguiente frame que realizará
   * la conexión con Pcap*/
     private void btnComenzarActionPerformed(java.awt.event.ActionEvent evt) {
@@ -537,8 +493,77 @@ public class Launch2 extends javax.swing.JFrame {
         }
         System.out.println("filtro: " + filtro + " INFINITE: " + isInfinite + " isFile: " + isFile + " timeout: " + timeout + " num: " + numPaquetes
                 + " nombreArchivo: " + nombreArchivo);
-        System.out.println("p: " + deviceSelected);
+        System.out.println("Interfaz: " + deviceSelected);
         new Protocolos(deviceSelected, timeout, numPaquetes, isFile, isInfinite, filtro, nombreArchivo).setVisible(true);
         this.setVisible(false);
     }
+
+  public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+    //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
+         */
+    try {
+      for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+        if ("Nimbus".equals(info.getName())) {
+          javax.swing.UIManager.setLookAndFeel(info.getClassName());
+          break;
+        }
+      }
+    } catch (ClassNotFoundException ex) {
+      java.util.logging.Logger.getLogger(Launch2.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+    } catch (InstantiationException ex) {
+      java.util.logging.Logger.getLogger(Launch2.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+    } catch (IllegalAccessException ex) {
+      java.util.logging.Logger.getLogger(Launch2.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+    } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+      java.util.logging.Logger.getLogger(Launch2.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+    }
+    //</editor-fold>
+    //</editor-fold>
+
+    java.awt.EventQueue.invokeLater(new Runnable() {
+      public void run() {
+        new Launch2().setVisible(true);
+      }
+    });
+  }
+
+  // Variables declaration - do not modify
+  private javax.swing.JButton btnComenzar;
+  private javax.swing.ButtonGroup buttonGroup1;
+  private javax.swing.JFileChooser fcPaquetes;
+  private javax.swing.JLabel jLabel1;
+  private javax.swing.JLabel jLabel11;
+  private javax.swing.JLabel jLabel2;
+  private javax.swing.JLabel jLabel3;
+  private javax.swing.JLabel jLabel4;
+  private javax.swing.JLabel jLabel5;
+  private javax.swing.JLabel jLabel6;
+  private javax.swing.JLabel jLabel7;
+  private javax.swing.JLabel jLabel8;
+  private javax.swing.JMenu jMenu1;
+  private javax.swing.JMenu jMenu2;
+  private javax.swing.JMenuBar jMenuBar1;
+  private javax.swing.JScrollPane jScrollPane1;
+  private javax.swing.JSeparator jSeparator1;
+  private javax.swing.JSeparator jSeparator2;
+  private javax.swing.JSeparator jSeparator3;
+  private javax.swing.JSeparator jSeparator4;
+  private javax.swing.JTextField jTextField1;
+  private javax.swing.JFormattedTextField jTextField2;
+  private javax.swing.JFormattedTextField jTextField3;
+  private javax.swing.JCheckBox jcbInfinite;
+  private javax.swing.JComboBox jcbSegundos;
+  private javax.swing.JLabel lblConfiguracion;
+  private javax.swing.JLabel lblEscom;
+  private javax.swing.JLabel lblTitulo;
+  private javax.swing.JList listInterfaces;
+  private javax.swing.JProgressBar pgConfiguracion;
+  private javax.swing.JRadioButton rdAire;
+  private javax.swing.JRadioButton rdArchivo;
+  private javax.swing.JTabbedPane tpFuentePaquetes;
+  private javax.swing.JFormattedTextField txBytes;
+  // End of variables declaration
 }
