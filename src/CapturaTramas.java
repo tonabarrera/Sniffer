@@ -10,28 +10,37 @@ public class CapturaTramas {
     private int snaplen;
     private int timeout;
     private String filtro;
+    private String nombreArchivo;
     private StringBuilder errbuf = new StringBuilder();
+    private boolean isFile;
 
     public CapturaTramas(String selectedName, int snaplen, int timeout, String filtro) {
         this.selectedName = selectedName;
         this.snaplen = snaplen;
         this.timeout = timeout;
         this.filtro = filtro;
+        this.isFile = false;
     }
-
+    public CapturaTramas(String nombreArchivo){
+      this.isFile =  true;
+      this.nombreArchivo = nombreArchivo;
+    }
     /*Metodo para la conexion de Pcap a una interfaz*/
     public void conectarPcap() {
+      if(isFile){
+        pcap = Pcap.openOffline(nombreArchivo, errbuf);
+      }else {
         System.out.println(
-                "s: " + selectedName + " sna: " + snaplen + " prom: " + Pcap.MODE_PROMISCUOUS + "" +
-                        " t: " + timeout + " err: " + errbuf);
+          "s: " + selectedName + " sna: " + snaplen + " prom: " + Pcap.MODE_PROMISCUOUS + "" +
+            " t: " + timeout + " err: " + errbuf);
         pcap = Pcap.openLive(selectedName, snaplen, Pcap.MODE_PROMISCUOUS, timeout, errbuf);
         if (pcap == null) {
-            System.err.printf("Error while opening device for capture: " + errbuf.toString());
-            return;
+          System.err.printf("Error while opening device for capture: " + errbuf.toString());
+          return;
         }//if
         System.out.println("Conexion realizada");
         crearFiltro();
-
+      }
     }
 
     /*Metodo para agregar el filtro a dicha conexión ya creada*/
@@ -68,7 +77,7 @@ public class CapturaTramas {
 
     /*Metodo para pausar la rececpción de paquetes*/
     public void pausarObtenecion() {
-        pcap.close();
+      pcap.close();
     }
 }
 //axelernesto@gmail.com

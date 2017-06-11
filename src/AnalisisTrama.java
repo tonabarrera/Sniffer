@@ -87,6 +87,11 @@ public class AnalisisTrama {
     private byte tiempoRespuesta;
     private String grupo;
     private String checksumIGMP;
+    /*Variables ICMP*/
+    private int tipoICMP;
+    private int codigoICMP;
+    private String descripcionICMP;
+    private int checksumICMP;
 
     //Capa Fisica
     private byte[] infoHexadecimal;
@@ -164,6 +169,65 @@ public class AnalisisTrama {
                     setWindow(analizadorTCP.window());
                     setChecksumTCP(analizadorTCP.checksum());
                     setUrgent(analizadorTCP.urgent());
+                } else if(paqueteActual.hasHeader(analizadorICMP)){
+                  protocolo = "ICMP";
+                  setChecksumICMP(analizadorICMP.checksum());
+                  setCodigoICMP(analizadorICMP.code());
+                  setTipoICMP(analizadorICMP.type());
+                  setDescripcionICMP(analizadorICMP.getDescription());
+                  //Chequeo manual de la description de ICMP ya que el metodo a retornado null en algunas ocasiones
+                  if(descripcionICMP == null){
+                    if(tipoICMP == 0){
+                      descripcionICMP = "echo reply";
+                    }else if(tipoICMP == 3){
+                      switch (codigoICMP){
+                        case 0: descripcionICMP = "network unreachable"; break;
+                        case 1: descripcionICMP = "host unreachable"; break;
+                        case 2: descripcionICMP = "protocol unreachable"; break;
+                        case 3: descripcionICMP = "port unreachable"; break;
+                        case 4: descripcionICMP = "fragmentation needed, but DF bit set"; break;
+                        case 5: descripcionICMP = "source route failed"; break;
+                        case 6: descripcionICMP = "destination network unknown"; break;
+                        case 7: descripcionICMP = "destination network unknown"; break;
+                        case 9: descripcionICMP = "destination network administratevily prohibited"; break;
+                        case 10: descripcionICMP = "destination host administratevily prohibited"; break;
+                        case 11: descripcionICMP = "network unreachable for TOS"; break;
+                        case 12: descripcionICMP = "host unreachable for TOS"; break;
+                        default: descripcionICMP = "adentro afuera lento lento";
+                      }
+                    }else if(tipoICMP == 4){
+                      descripcionICMP = "source quench";
+                    }else if(tipoICMP == 5){
+                      switch (codigoICMP){
+                        case 0:descripcionICMP = "redirect for network"; break;
+                        case 1:descripcionICMP = "redirect for host"; break;
+                        case 2:descripcionICMP = "redirect for TOS and network"; break;
+                        case 3:descripcionICMP = "redirect for TOS and host"; break;
+                      }
+                    }else if(tipoICMP == 8){
+                      descripcionICMP = "echo request";
+                    }else if(tipoICMP == 11){
+                      if(codigoICMP == 0){
+                        descripcionICMP = "time exceeded during transit";
+                      }else{
+                        descripcionICMP = "time exceeded during assembly";
+                      }
+                    }else if(tipoICMP == 12){
+                      if(codigoICMP == 0){
+                        descripcionICMP = "IP header bad";
+                      }else{
+                        descripcionICMP = "required option missed";
+                      }
+                    }else if(tipoICMP == 13){
+                      descripcionICMP = "timestamp request";
+                    }else if(tipoICMP == 14){
+                      descripcionICMP = "timestamp reply";
+                    }else if(tipoICMP == 17){
+                      descripcionICMP = "address mask request";
+                    }else {
+                      descripcionICMP = "address mask reply";
+                    }
+                  }//null - description
                 }
             }
 
@@ -221,7 +285,10 @@ public class AnalisisTrama {
         }
         System.out.println("IGMP");
     }
+    //Metodo para analisis ICMP
+    private void analizarICMP(){
 
+    }
 
     /*Metodos Auxiliares*/
     //Retorna un String con la fecha y tiempo de captura del paquete
@@ -676,4 +743,36 @@ public class AnalisisTrama {
     public void setTipoIGMPbyte(byte tipoIGMPbyte) {
         this.tipoIGMPbyte = tipoIGMPbyte;
     }
+
+  public int getTipoICMP() {
+    return tipoICMP;
+  }
+
+  public void setTipoICMP(int tipoICMP) {
+    this.tipoICMP = tipoICMP;
+  }
+
+  public int getCodigoICMP() {
+    return codigoICMP;
+  }
+
+  public void setCodigoICMP(int codigoICMP) {
+    this.codigoICMP = codigoICMP;
+  }
+
+  public String getDescripcionICMP() {
+    return descripcionICMP;
+  }
+
+  public void setDescripcionICMP(String descripcionICMP) {
+    this.descripcionICMP = descripcionICMP;
+  }
+
+  public int getChecksumICMP() {
+    return checksumICMP;
+  }
+
+  public void setChecksumICMP(int checksumICMP) {
+    this.checksumICMP = checksumICMP;
+  }
 }

@@ -104,7 +104,7 @@ public class Launch2 extends javax.swing.JFrame {
     jSeparator4 = new javax.swing.JSeparator();
     jLabel1 = new javax.swing.JLabel();
     jLabel2 = new javax.swing.JLabel();
-    jTextField2 = new javax.swing.JFormattedTextField(new Integer(0));
+    jTextField2 = new javax.swing.JFormattedTextField(new Integer(10));
     jTextField2.addFocusListener(new java.awt.event.FocusAdapter() {
       public void focusLost(java.awt.event.FocusEvent evt) {
         timeoutOut(evt);
@@ -112,7 +112,7 @@ public class Launch2 extends javax.swing.JFrame {
     });
     jcbSegundos = new javax.swing.JComboBox();
     jLabel3 = new javax.swing.JLabel();
-    jTextField3 = new javax.swing.JFormattedTextField(new Integer(0));
+    jTextField3 = new javax.swing.JFormattedTextField(new Integer(10));
     jTextField3.addFocusListener(new java.awt.event.FocusAdapter() {
       public void focusLost(java.awt.event.FocusEvent evt) {
         paquetesOut(evt);
