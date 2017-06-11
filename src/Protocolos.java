@@ -42,7 +42,7 @@ public class Protocolos extends javax.swing.JFrame {
     private CapturaTramas capturador;
     //Variable para controlar el estado de recepcion/pausa de paquetes
     private boolean isReceiving;
-
+    private boolean rememberInfinite;
     //Contructor con los params recibidos del frame anterior
     public Protocolos(PcapIf deviceSelected, int timeout, int numPaquetes, boolean isFile,
             boolean isInfinite, String filtro, String nombreArchivo) {
@@ -57,7 +57,7 @@ public class Protocolos extends javax.swing.JFrame {
         this.numPaquetes = numPaquetes;
         this.nombreArchivo = nombreArchivo;
         this.isReceiving = true;
-
+        this.rememberInfinite = isInfinite;
     /*Creando la UI*/
         initComponents();
     }
@@ -245,17 +245,23 @@ public class Protocolos extends javax.swing.JFrame {
         //Iniciando la recepción de paquetes
         //Lectura de archivo
         if(isFile){
-          System.out.println("Iniciando con archivo");
-          capturador =  new CapturaTramas(nombreArchivo);
-          capturador.conectarPcap();
-          AdministradorPaquetes administradorPaquetes = new AdministradorPaquetes();
-          administradorPaquetes.start();
-          //Para leer el archivo completo
-          isInfinite = true;
+          if(isReceiving == true){
+            System.out.println("Iniciando con archivo");
+            capturador =  new CapturaTramas(nombreArchivo);
+            capturador.conectarPcap();
+            AdministradorPaquetes administradorPaquetes = new AdministradorPaquetes();
+            administradorPaquetes.start();
+            //Para leer el archivo completo
+            isInfinite = true;
+            //Cambio estado del boton
+            isReceiving = false;
+          }else{
+            isReceiving = true;
+          }
         }else{
           System.out.println("Iniciando con captura al aire");
           //Captura al aire
-          if (isReceiving) {
+          if (isReceiving == true) {
             //Generando conexión con pcap
             capturador = new CapturaTramas(deviceSelected.getName(), (64 * 1024), timeout, filtro);
             capturador.conectarPcap();
@@ -264,7 +270,10 @@ public class Protocolos extends javax.swing.JFrame {
             administradorPaquetes.start();
             //Realizando un toggle
             isReceiving = false;
-          } else {
+            if(rememberInfinite == true){
+              isInfinite = true;
+            }
+          }else {
             //Pausando la obtención de paquetes, mediante el cierre de la conexión
             capturador.pausarObtenecion();
             isReceiving = true;
