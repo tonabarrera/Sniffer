@@ -218,6 +218,8 @@ public class Protocolos extends javax.swing.JFrame {
           capturador.conectarPcap();
           AdministradorPaquetes administradorPaquetes = new AdministradorPaquetes();
           administradorPaquetes.start();
+          //Para leer el archivo completo
+          isInfinite = true;
         }else{
           System.out.println("Iniciando con captura al aire");
           //Captura al aire
