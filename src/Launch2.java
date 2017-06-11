@@ -81,10 +81,30 @@ public class Launch2 extends javax.swing.JFrame {
     */
     pgConfiguracion.setMaximum(6);
     pgConfiguracion.setMinimum(0);
+    
+    //agregar el boton de arp
+    btnArp = new JButton();
+    btnArp.setText("ARP");
+    btnArp.setBounds(new Rectangle(80,30));
+    btnArp.setLocation(430, 400);
+    btnArp.setVisible(true);
+    btnArp.addActionListener(new ActionListener(){
+       public void actionPerformed(ActionEvent evt) {
+            arpform arp = new arpform();
+            arp.arp();
+           
+           
+            }
+    });
+    
+    add(btnArp);
+    
+    this.setLocationRelativeTo(this);
   }
     // <editor-fold defaultstate="collapsed" desc="Generated Code">
     private void initComponents(String[] a) {
 
+        
         buttonGroup1 = new javax.swing.ButtonGroup();
         lblEscom = new javax.swing.JLabel();
         lblTitulo = new javax.swing.JLabel();
