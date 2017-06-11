@@ -444,11 +444,10 @@ public class Launch2 extends javax.swing.JFrame {
     /*Metodo usado para obtener la ruta de un archivo que sera usado por Pcap para analizar sus paquetes*/
     private void fileSelection(java.awt.event.ActionEvent evt) {
       Date id =  new Date();
-
       File archivo = fcPaquetes.getSelectedFile();
       nombreArchivo = "temp"+id.getTime()+".pcap";
 
-      File receptor  =  new File("temp.pcap");
+      File receptor  =  new File(nombreArchivo);
       try {
         copyFileUsingStream(archivo,receptor);
       } catch (IOException e) {
