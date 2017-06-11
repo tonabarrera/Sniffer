@@ -11,6 +11,7 @@ import javax.swing.event.ListSelectionListener;
 import java.io.*;
 import java.nio.file.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static javax.swing.JOptionPane.*;
@@ -442,10 +443,12 @@ public class Launch2 extends javax.swing.JFrame {
 
     /*Metodo usado para obtener la ruta de un archivo que sera usado por Pcap para analizar sus paquetes*/
     private void fileSelection(java.awt.event.ActionEvent evt) {
-      File archivo = fcPaquetes.getSelectedFile();
-      nombreArchivo = "temp.pcap";
+      Date id =  new Date();
 
-      File receptor  =  new File("temp.pcap");
+      File archivo = fcPaquetes.getSelectedFile();
+      nombreArchivo = "temp"+id.getTime()+".pcap";
+
+      File receptor  =  new File(nombreArchivo);
       try {
         copyFileUsingStream(archivo,receptor);
       } catch (IOException e) {
