@@ -41,12 +41,18 @@ public class CapturaTramas {
           return;
         }//if
         System.out.println("Conexion realizada");
-        crearFiltro();
+        boolean filtro = crearFiltro();
+        if(filtro == true){
+          System.out.println("Filtro activado");
+        }else{
+          System.out.println("Filtro no activado");
+        }
       }
     }
 
     /*Metodo para agregar el filtro a dicha conexión ya creada*/
-    public void crearFiltro() {
+    public boolean crearFiltro() {
+      boolean filtroExitoso =true;
      /*Estableciendo el filtro*/
         PcapBpfProgram filter = new PcapBpfProgram();
         String expression = filtro;
@@ -54,10 +60,11 @@ public class CapturaTramas {
         int netmask = 0;
         int exito = pcap.compile(filter, expression, optimize, netmask);
         if (exito != Pcap.OK) {
+            filtroExitoso = false;
             System.out.println("Filter error: " + pcap.getErr());
         }
         pcap.setFilter(filter);
-        System.out.println("Filtro activado");
+      return filtroExitoso;
     }
 
     /*Metodo para capturar un paquete de la red a la que pcap esta conectada,

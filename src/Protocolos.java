@@ -56,7 +56,7 @@ public class Protocolos extends javax.swing.JFrame {
         this.timeout = timeout;
         this.numPaquetes = numPaquetes;
         this.nombreArchivo = nombreArchivo;
-        this.isReceiving = false;
+        this.isReceiving = true;
 
     /*Creando la UI*/
         initComponents();
@@ -255,7 +255,7 @@ public class Protocolos extends javax.swing.JFrame {
         }else{
           System.out.println("Iniciando con captura al aire");
           //Captura al aire
-          if (!isReceiving) {
+          if (isReceiving) {
             //Generando conexión con pcap
             capturador = new CapturaTramas(deviceSelected.getName(), (64 * 1024), timeout, filtro);
             capturador.conectarPcap();
@@ -263,11 +263,11 @@ public class Protocolos extends javax.swing.JFrame {
             AdministradorPaquetes administradorPaquetes = new AdministradorPaquetes();
             administradorPaquetes.start();
             //Realizando un toggle
-            isReceiving = true;
+            isReceiving = false;
           } else {
             //Pausando la obtención de paquetes, mediante el cierre de la conexión
             capturador.pausarObtenecion();
-
+            isReceiving = true;
           }
         }
     }

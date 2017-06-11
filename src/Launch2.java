@@ -81,7 +81,7 @@ public class Launch2 extends javax.swing.JFrame {
     */
     pgConfiguracion.setMaximum(6);
     pgConfiguracion.setMinimum(0);
-    
+
     //agregar el boton de arp
     btnArp = new JButton();
     btnArp.setText("ARP");
@@ -92,19 +92,19 @@ public class Launch2 extends javax.swing.JFrame {
        public void actionPerformed(ActionEvent evt) {
             arpform arp = new arpform();
             arp.arp();
-           
-           
+
+
             }
     });
-    
+
     add(btnArp);
-    
+
     this.setLocationRelativeTo(this);
   }
     // <editor-fold defaultstate="collapsed" desc="Generated Code">
     private void initComponents(String[] a) {
 
-        
+
         buttonGroup1 = new javax.swing.ButtonGroup();
         lblEscom = new javax.swing.JLabel();
         lblTitulo = new javax.swing.JLabel();
@@ -122,7 +122,7 @@ public class Launch2 extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JSeparator();
         btnComenzar = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        jTextField1 = new javax.swing.JTextField("tcp");
         txBytes = new javax.swing.JFormattedTextField(new Integer(65536));
         lblConfiguracion = new javax.swing.JLabel();
         pgConfiguracion = new javax.swing.JProgressBar();
