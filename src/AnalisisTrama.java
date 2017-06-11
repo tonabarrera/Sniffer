@@ -244,7 +244,10 @@ public class AnalisisTrama {
     }
 
     private void analizarUDP(){
-
+        setSrcPort(analizadorUDP.source());
+        setDestPort(analizadorUDP.destination());
+        setLengthUDP(analizadorUDP.length());
+        setChecksumUDP(analizadorUDP.checksum());
     }
 
     private void analizarTCP() {
