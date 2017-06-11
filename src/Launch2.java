@@ -27,6 +27,7 @@ public class Launch2 extends javax.swing.JFrame {
     public String filtro;
     public String nombreArchivo;
     public StringBuilder errbuf = new StringBuilder();
+    public arpform arp;
 
     //Variable propias de este frame
     private short progresoConfiguracion = 0;
@@ -90,8 +91,8 @@ public class Launch2 extends javax.swing.JFrame {
     btnArp.setVisible(true);
     btnArp.addActionListener(new ActionListener(){
        public void actionPerformed(ActionEvent evt) {
-            arpform arp = new arpform();
-            arp.arp();
+            arp = new arpform();
+            arp.muestraArp();
            
            
             }
