@@ -1,6 +1,10 @@
 import org.jnetpcap.PcapIf;;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -58,6 +62,31 @@ public class Protocolos extends javax.swing.JFrame {
         initComponents();
     }
 
+    class MenuActionListener extends Component implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            try {
+                System.out.println("Selected: " + e.getActionCommand());
+                String nombreArchivo = "captura.pcap"; // por defecto
+                JFileChooser file = new JFileChooser();
+                int aux = file.showOpenDialog(this);
+                if (aux == JFileChooser.APPROVE_OPTION) {
+                    nombreArchivo = file.getSelectedFile().getAbsolutePath();
+                }
+                if (!nombreArchivo.equals("")) {
+                    capturador.guardarTramas(numPaquetes, nombreArchivo);
+                    JOptionPane.showMessageDialog(null, "Archivo guardado");
+                } else {
+                    System.out.println("No se pudo");
+                    JOptionPane.showMessageDialog(null, "No se pudo guardar =(");
+
+                }
+            } catch (Exception error) {
+                System.out.println("ERROR");
+                JOptionPane.showMessageDialog(null, "Epale, epale ocurrio un error");
+            }
+        }
+    }
+
   /*Seccion para la creación de la UI, esta sección no debe ser modificada salvo casos muy específicos*/
   private void initComponents() {
     jLabel1 = new javax.swing.JLabel();
@@ -78,6 +107,7 @@ public class Protocolos extends javax.swing.JFrame {
     jMenuBar1 = new javax.swing.JMenuBar();
     jMenu1 = new javax.swing.JMenu();
     jMenu2 = new javax.swing.JMenu();
+    menuItem = new javax.swing.JMenuItem();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -128,10 +158,12 @@ public class Protocolos extends javax.swing.JFrame {
     jScrollPane3.setViewportView(listaOriginal);
 
     jMenu1.setText("File");
+    jMenu1.setMnemonic(KeyEvent.VK_F);
     jMenuBar1.add(jMenu1);
 
-    jMenu2.setText("Edit");
-    jMenuBar1.add(jMenu2);
+    menuItem.setText("Save");
+    menuItem.addActionListener(new MenuActionListener());
+    jMenu1.add(menuItem);
 
     setJMenuBar(jMenuBar1);
 
@@ -611,5 +643,6 @@ public class Protocolos extends javax.swing.JFrame {
     private javax.swing.JList listaOriginal;
     private javax.swing.JTable tablaPaquetes;
     private javax.swing.JTextField txtFiltro;
+    private javax.swing.JMenuItem menuItem;
     // End of variables declaration
 }

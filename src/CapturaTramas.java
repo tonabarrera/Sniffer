@@ -1,5 +1,5 @@
-import org.jnetpcap.Pcap;
-import org.jnetpcap.PcapBpfProgram;
+import org.jnetpcap.*;
+import org.jnetpcap.nio.JBuffer;
 import org.jnetpcap.packet.PcapPacket;
 import org.jnetpcap.packet.PcapPacketHandler;
 
@@ -80,6 +80,18 @@ public class CapturaTramas {
     /*Metodo para pausar la rececpción de paquetes*/
     public void pausarObtenecion() {
       pcap.close();
+    }
+
+    public void guardarTramas(int num, String archivo) {
+        PcapDumper dumper = pcap.dumpOpen(archivo);
+        JBufferHandler<PcapDumper> dumpHandler = new JBufferHandler<PcapDumper>() {
+            @Override
+            public void nextPacket(PcapHeader header, JBuffer buffer, PcapDumper user) {
+                dumper.dump(header, buffer);
+            }
+        };
+        pcap.loop(num, dumpHandler, dumper);
+        dumper.close();
     }
 }
 //axelernesto@gmail.com
