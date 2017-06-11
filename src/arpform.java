@@ -31,7 +31,7 @@ public class arpform extends javax.swing.JFrame {
         
         interfaces();
         
-        
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
     
     private String asString(final byte[] mac) 
@@ -254,6 +254,33 @@ public class arpform extends javax.swing.JFrame {
         
     }//GEN-LAST:event_btnEnviarActionPerformed
 
+    
+    public void muestraArp(){
+           try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(arpform.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(arpform.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(arpform.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(arpform.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new arpform().setVisible(true);
+            }
+        });
+    }
     /**
      * @param args the command line arguments
      */

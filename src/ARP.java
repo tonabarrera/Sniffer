@@ -12,6 +12,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;  
+import javax.swing.JOptionPane;
 import jdk.nashorn.internal.ir.LoopNode;
   
 import org.jnetpcap.Pcap;  
@@ -172,48 +173,66 @@ public class ARP {
         @Override
         public void nextPacket(PcapPacket packet, String user) {
 
-				System.out.printf("Paquete capturado el %s bytes capturados=%-4d tam original=%-4d %s\n",
+            
+				
+                                int tipo = (packet.getUByte(12)*256)+packet.getUByte(13);
+                                
+                                
+                                if(tipo==2054){ //0x2048 tipo arp
+                                    System.out.printf("Tipo= %d",tipo);
+                                    
+                                    System.out.printf("Paquete capturado el %s bytes capturados=%-4d tam original=%-4d %s\n",
 				    new Date(packet.getCaptureHeader().timestampInMillis()),
 				    packet.getCaptureHeader().caplen(),  // Length actually captured
 				    packet.getCaptureHeader().wirelen(), // Original length
 				    user                                 // User supplied object
 				    );
-                                /******Desencapsulado********/
-                                System.out.println("MAC destino:");
-                                for(int i=0;i<6;i++){
-                                System.out.printf("%02X ",packet.getUByte(i));
-                                }
-                                System.out.println("");
-                                System.out.println("MAC origen:");
-                                for(int i=6;i<12;i++){
-                                System.out.printf("%02X ",packet.getUByte(i));
-                                }
-                                System.out.println("");
-                                System.out.println("Tipo:");
-                                for(int i=12;i<14;i++){
-                                System.out.printf("%02X ",packet.getUByte(i));
-                                }
-                                int tipo = (packet.getUByte(12)*256)+packet.getUByte(13);
-                                
-                                System.out.printf("Tipo= %d",tipo);
-                                if(tipo==2048){ //0x0800
-                                   System.out.println("\n****************Datos del mensaje:");
-                                   byte[]t = packet.getByteArray(14, 41);
+                                    /******Desencapsulado********/
+                                    System.out.println("MAC destino:");
+                                    for(int i=0;i<6;i++){
+                                    System.out.printf("%02X ",packet.getUByte(i));
+                                    }
+                                    System.out.println("");
+                                    System.out.println("MAC origen:");
+                                    for(int i=6;i<12;i++){
+                                    System.out.printf("%02X ",packet.getUByte(i));
+                                    }
+                                    System.out.println("");
+                                    System.out.println("Tipo:");
+                                    for(int i=12;i<14;i++){
+                                    System.out.printf("%02X ",packet.getUByte(i));
+                                    }
+                                    
+                                    /*System.out.println("\n");
+                                    for(int i=14;i<packet.size();++i){
+                                        System.out.printf("%02X ",packet.getUByte(i));
+                                    }*/
+                                    System.out.println("\n");
+                                    
+
+                                   byte[]t = packet.getByteArray(0, packet.size());
                                    
-                                   if(t[21]==2){
+                                   /*if(t[21]==2){
                                        for(int k=0;k<t.length;k++)
-                                        System.out.printf("%02X ",t[k]);
+                                        System.out.printf("tipo = %02X \n",t[k]);
+                                   }*/
+                                   
+                                   
+                                   
+                                   StringBuilder str = new StringBuilder();
+                                   for(int i=22;i<28;++i){
+                                       str.append(String.format("%02X ", t[i]));
                                    }
                                    
-                                   /*String datos = new String(t);
-                                    System.out.println("\n"+datos);
-
-                                for(int l=0;l<packet.size();l++){
-                                System.out.printf("%02X ",packet.getUByte(l));
-                                if(l%16==15)
-                                    System.out.println("");
-                                }*/
-
+                                  
+                                       
+                                    System.out.println("La direccion mac es"+str.toString().substring(0, str.toString().length()-1));
+                                    JOptionPane.showMessageDialog(null, "La direccion mac es:  "+str.toString().substring(0, str.toString().length()-1));
+                                    pcap.breakloop();
+                                  
+                                   
+                                    
+                                   
 
                                 }
 
