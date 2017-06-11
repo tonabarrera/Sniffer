@@ -446,9 +446,9 @@ public class Launch2 extends javax.swing.JFrame {
       Date id =  new Date();
 
       File archivo = fcPaquetes.getSelectedFile();
-      nombreArchivo = "temp"+id.getTime()+".pcap";
+      nombreArchivo = "temp"+ +"";
 
-      File receptor  =  new File(nombreArchivo);
+      File receptor  =  new File("temp.pcap");
       try {
         copyFileUsingStream(archivo,receptor);
       } catch (IOException e) {
