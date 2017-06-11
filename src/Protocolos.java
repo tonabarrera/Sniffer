@@ -250,6 +250,8 @@ public class Protocolos extends javax.swing.JFrame {
           capturador.conectarPcap();
           AdministradorPaquetes administradorPaquetes = new AdministradorPaquetes();
           administradorPaquetes.start();
+          //Para leer el archivo completo
+          isInfinite = true;
         }else{
           System.out.println("Iniciando con captura al aire");
           //Captura al aire
@@ -265,6 +267,7 @@ public class Protocolos extends javax.swing.JFrame {
           } else {
             //Pausando la obtención de paquetes, mediante el cierre de la conexión
             capturador.pausarObtenecion();
+
           }
         }
     }
@@ -587,7 +590,13 @@ public class Protocolos extends javax.swing.JFrame {
                 while (isInfinite) {
                     tramaActual = capturador.obtenerPaquete();
                     tramaActual.setNumero(i);
-                    tramaActual.analizarPaquete();
+                    try{
+                      tramaActual.analizarPaquete();
+                    }catch(Exception e){
+                      isInfinite =  false;
+                      System.out.println("Termine lectura de paquetes");
+                    }
+
                     analisisTramas.add(tramaActual);
                     //Guardar datos en la tabla
                     argegarFila();

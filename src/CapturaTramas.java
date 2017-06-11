@@ -24,11 +24,11 @@ public class CapturaTramas {
     public CapturaTramas(String nombreArchivo){
       this.isFile =  true;
       this.nombreArchivo = nombreArchivo;
-      System.out.println("Constructor de archivo");
+      System.out.println("Conxtructor Archivo");
     }
     /*Metodo para la conexion de Pcap a una interfaz*/
     public void conectarPcap() {
-      if(isFile==true){
+      if(isFile){
         pcap = Pcap.openOffline(nombreArchivo, errbuf);
         System.out.println("Offline");
       }else {
