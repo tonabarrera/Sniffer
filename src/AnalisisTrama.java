@@ -128,47 +128,13 @@ public class AnalisisTrama {
                 AnalizarIGMP();
             } else {
                 protocolo = "Ipv4";
-                setVersion(analizadorIP4.version());
-                setHeaderLength(analizadorIP4.hlen());
-                setTos(analizadorIP4.tos());
-                setTosCode(analizadorIP4.tos_Codepoint());
-                setTosECN(analizadorIP4.tos_ECN());
-                setLength(analizadorIP4.length());
-                setId(analizadorIP4.id());
-                setFlags(analizadorIP4.flags());
-                setFlagReserved(analizadorIP4.flags_Reserved());
-                setFlagDF(analizadorIP4.flags_DF());
-                setFlagMF(analizadorIP4.flags_MF());
-                setFlagDFDesc(analizadorIP4.flags_DFDescription());
-                setFlagMFDesc(analizadorIP4.flags_MFDescription());
-                setTtl(analizadorIP4.ttl());
-                setProtocoloId(analizadorIP4.type());
-                setChecksum(analizadorIP4.checksum());
+                analizarIPv4();
                 if (paqueteActual.hasHeader(analizadorUDP)) {
                     protocolo = "UDP";
-                    setSrcPort(analizadorUDP.source());
-                    setDestPort(analizadorUDP.destination());
-                    setLengthUDP(analizadorUDP.length());
-                    setChecksumUDP(analizadorUDP.checksum());
+                    analizarUDP();
                 } else if (paqueteActual.hasHeader(analizadorTCP)) {
                     protocolo = "TCP";
-                    setSrcPort(analizadorTCP.source());
-                    setDestPort(analizadorTCP.destination());
-                    setSeq(analizadorTCP.seq());
-                    setAck(analizadorTCP.ack());
-                    setHlenTCP(analizadorTCP.hlen());
-                    setFlagsTCP(analizadorTCP.flags());
-                    setFlagACK(analizadorTCP.flags_ACK());
-                    setFlagCWR(analizadorTCP.flags_CWR());
-                    setFlagECE(analizadorTCP.flags_ECE());
-                    setFlagFIN(analizadorTCP.flags_FIN());
-                    setFlagPSH(analizadorTCP.flags_PSH());
-                    setFlagRST(analizadorTCP.flags_RST());
-                    setFlagSYN(analizadorTCP.flags_SYN());
-                    setFlagURG(analizadorTCP.flags_URG());
-                    setWindow(analizadorTCP.window());
-                    setChecksumTCP(analizadorTCP.checksum());
-                    setUrgent(analizadorTCP.urgent());
+                    analizarTCP();
                 } else if(paqueteActual.hasHeader(analizadorICMP)){
                   protocolo = "ICMP";
                   setChecksumICMP(analizadorICMP.checksum());
@@ -256,6 +222,49 @@ public class AnalisisTrama {
             buf.append(Integer.toHexString((b < 0) ? b + 256 : b).toUpperCase());
         }
         return buf.toString();
+    }
+
+    private void analizarIPv4() {
+        setVersion(analizadorIP4.version());
+        setHeaderLength(analizadorIP4.hlen());
+        setTos(analizadorIP4.tos());
+        setTosCode(analizadorIP4.tos_Codepoint());
+        setTosECN(analizadorIP4.tos_ECN());
+        setLength(analizadorIP4.length());
+        setId(analizadorIP4.id());
+        setFlags(analizadorIP4.flags());
+        setFlagReserved(analizadorIP4.flags_Reserved());
+        setFlagDF(analizadorIP4.flags_DF());
+        setFlagMF(analizadorIP4.flags_MF());
+        setFlagDFDesc(analizadorIP4.flags_DFDescription());
+        setFlagMFDesc(analizadorIP4.flags_MFDescription());
+        setTtl(analizadorIP4.ttl());
+        setProtocoloId(analizadorIP4.type());
+        setChecksum(analizadorIP4.checksum());
+    }
+
+    private void analizarUDP(){
+
+    }
+
+    private void analizarTCP() {
+        setSrcPort(analizadorTCP.source());
+        setDestPort(analizadorTCP.destination());
+        setSeq(analizadorTCP.seq());
+        setAck(analizadorTCP.ack());
+        setHlenTCP(analizadorTCP.hlen());
+        setFlagsTCP(analizadorTCP.flags());
+        setFlagACK(analizadorTCP.flags_ACK());
+        setFlagCWR(analizadorTCP.flags_CWR());
+        setFlagECE(analizadorTCP.flags_ECE());
+        setFlagFIN(analizadorTCP.flags_FIN());
+        setFlagPSH(analizadorTCP.flags_PSH());
+        setFlagRST(analizadorTCP.flags_RST());
+        setFlagSYN(analizadorTCP.flags_SYN());
+        setFlagURG(analizadorTCP.flags_URG());
+        setWindow(analizadorTCP.window());
+        setChecksumTCP(analizadorTCP.checksum());
+        setUrgent(analizadorTCP.urgent());
     }
 
     //Analisis del protocolo IGMP
