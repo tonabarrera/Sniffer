@@ -28,13 +28,13 @@ public class arpform extends javax.swing.JFrame {
         lstMac = new ArrayList<>();
         initComponents();
         setLocationRelativeTo(this);
-        
+
         interfaces();
-        
-        
+
+        this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
-    
-    private String asString(final byte[] mac) 
+
+    private String asString(final byte[] mac)
     {
         final StringBuilder buf = new StringBuilder();
         for (byte b : mac) {
@@ -49,12 +49,12 @@ public class arpform extends javax.swing.JFrame {
 
         return buf.toString();
   }
-    
+
     public void interfaces()
-    { 
+    {
         lstInterfaces.removeAllItems();
-        List<PcapIf> alldevs = new ArrayList<PcapIf>(); // Will be filled with NICs  
-         StringBuilder errbuf = new StringBuilder(); // For any error msgs  
+        List<PcapIf> alldevs = new ArrayList<PcapIf>(); // Will be filled with NICs
+         StringBuilder errbuf = new StringBuilder(); // For any error msgs
         String ip_interfaz="";
         int r = Pcap.findAllDevs(alldevs, errbuf);
 		if (r == Pcap.NOT_OK || alldevs.isEmpty()) {
@@ -75,7 +75,7 @@ public class arpform extends javax.swing.JFrame {
                         lstMac.add(dir_mac);
                         System.out.printf("\n#%d: %s [%s] MAC:[%s]\n", i++, device.getName(), description, dir_mac);
                         lstInterfaces.addItem(i++ +"  "+ description +"   "+ dir_mac);
-                        
+
                         Iterator<PcapAddr> it = device.getAddresses().iterator();
                         while(it.hasNext()){
                             PcapAddr dir = it.next();//dir, familia, mascara,bc
@@ -96,21 +96,21 @@ public class arpform extends javax.swing.JFrame {
                                 ip = ip.substring(0, ip.length()-1);
                                 lstIp.add(ip);
                                 System.out.println("\nIP4->"+ip);
-                                
+
                             }else if(familia==org.jnetpcap.PcapSockAddr.AF_INET6){
                                 System.out.print("\nIP6-> ");
                                 for(int z=0;z<d_ip.length;z++)
                                     System.out.printf("%02X:",d_ip[z]);
                             }//if
                         }//while
-                        
-                        lblIp.setText("Ip actual"+ lstIp.get(lstInterfaces.getSelectedIndex()));
-                        
+
+                        //lblIp.setText("Ip actual"+ lstIp.get(lstInterfaces.getSelectedIndex()));
+
 		}//for
                 }catch(IOException io){
                   io.printStackTrace();
                 }//catch
-                
+
     }
 
     /**
@@ -240,30 +240,23 @@ public class arpform extends javax.swing.JFrame {
        String mac = lstMac.get(lstInterfaces.getSelectedIndex());
        String ipActual = lstIp.get(lstInterfaces.getSelectedIndex());
        String ipRes = txtbyte1.getText()+"."+txtbyte2.getText()+"."+txtbyte3.getText()+"."+txtbyte4.getText();
-       
+
        //mandar a llamar la clase de ARP
        ARP conecta = new ARP();
        conecta.lanzaPeticion(lstInterfaces.getSelectedIndex(), ipActual, ipRes);
-       
 
-       
 
-       
+
+
+
        //mandar datos a la clase ARP
-        
-        
+
+
     }//GEN-LAST:event_btnEnviarActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
+
+    public void muestraArp(){
+           try {
             for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
                 if ("Nimbus".equals(info.getName())) {
                     javax.swing.UIManager.setLookAndFeel(info.getClassName());
@@ -288,6 +281,10 @@ public class arpform extends javax.swing.JFrame {
             }
         });
     }
+    /**
+     * @param args the command line arguments
+     */
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnEnviar;

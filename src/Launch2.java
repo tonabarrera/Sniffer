@@ -1,11 +1,16 @@
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.jnetpcap.Pcap;
 import org.jnetpcap.PcapIf;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import java.io.File;
+import java.io.*;
+import java.nio.file.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static javax.swing.JOptionPane.*;
@@ -21,21 +26,24 @@ public class Launch2 extends javax.swing.JFrame {
   public String filtro;
   public String nombreArchivo;
   public StringBuilder errbuf = new StringBuilder();
+  public arpform arp;
 
   //Variable propias de este frame
   private short progresoConfiguracion = 0;
   private List<PcapIf> interfaces;
   private List<String> listaInt;
+  private JButton btnArp;
 
   public Launch2() {
-    /*Inicialización de las variables importantes*/
+        /*Inicialización de las variables importantes*/
     isFile = false;
     timeout = 0;
     numPaquetes = 0;
     filtro = "";
-    /*Obteniendo las interfaces por medio de PcapIf*/
+        /*Obteniendo las interfaces por medio de PcapIf*/
     interfaces = new ArrayList<PcapIf>();
     listaInt = new ArrayList<String>();
+    //esta variable r es utilizada para seleccionar la interface en el protocolo ARP
     int r = Pcap.findAllDevs(interfaces, errbuf);
     if (r == Pcap.NOT_OK || interfaces.isEmpty()) {
       System.err.printf("Como quieres conectarte si no tienes ninguna interfaz");
@@ -49,34 +57,53 @@ public class Launch2 extends javax.swing.JFrame {
         final byte[] mac = device.getHardwareAddress();
         String dir_mac = (mac == null) ? "No tiene direccion MAC" : asString(mac);
         //Agregando cada interfaz al modelo
-        listaInt.add(i,device.getName()+" "+description+": "+dir_mac);
+        listaInt.add(i, device.getName() + " " + description + ": " + dir_mac);
         i++;
       }//for
     } catch (Exception e) {
       e.toString();
     }
-    /*Creando un arreglo de tipo final con las interfaces antes encontradas,
+        /*Creando un arreglo de tipo final con las interfaces antes encontradas,
       es necesario por la implementación de una clase anonima al llenar el JList
-    */
-    String []a = new String[listaInt.size()];
+         */
+    String[] a = new String[listaInt.size()];
     a = listaInt.toArray(a);
-     /*Creando los componentes, si algún elemento grafico es llenado dinámicamente
+        /*Creando los componentes, si algún elemento grafico es llenado dinámicamente
       su contenido debe ser declarado antes de este punto*/
     initComponents(a);
 
     //Agregando RadioButtons ya creados a su ButtonGroup correspondiente
     buttonGroup1.add(rdAire);
     buttonGroup1.add(rdArchivo);
-    /*
+        /*
     Estableciendo limites para el progressBar ya creado
     Teniendo en cuenta 6 pasos para poder comenzar el analisis de paquetes
     */
     pgConfiguracion.setMaximum(6);
     pgConfiguracion.setMinimum(0);
+
+    //agregar el boton de arp
+    btnArp = new JButton();
+    btnArp.setText("ARP");
+    btnArp.setBounds(new Rectangle(80,30));
+    btnArp.setLocation(430, 400);
+    btnArp.setVisible(true);
+    btnArp.addActionListener(new ActionListener(){
+      public void actionPerformed(ActionEvent evt) {
+        arp = new arpform();
+        arp.muestraArp();
+
+
+      }
+    });
+
+    add(btnArp);
+
+    this.setLocationRelativeTo(this);
   }
-  @SuppressWarnings("unchecked")
   // <editor-fold defaultstate="collapsed" desc="Generated Code">
-  private void initComponents(String[]a) {
+  private void initComponents(String[] a) {
+
 
     buttonGroup1 = new javax.swing.ButtonGroup();
     lblEscom = new javax.swing.JLabel();
@@ -95,7 +122,7 @@ public class Launch2 extends javax.swing.JFrame {
     jSeparator1 = new javax.swing.JSeparator();
     btnComenzar = new javax.swing.JButton();
     jLabel4 = new javax.swing.JLabel();
-    jTextField1 = new javax.swing.JTextField();
+    jTextField1 = new javax.swing.JTextField("tcp");
     txBytes = new javax.swing.JFormattedTextField(new Integer(65536));
     lblConfiguracion = new javax.swing.JLabel();
     pgConfiguracion = new javax.swing.JProgressBar();
@@ -104,7 +131,7 @@ public class Launch2 extends javax.swing.JFrame {
     jSeparator4 = new javax.swing.JSeparator();
     jLabel1 = new javax.swing.JLabel();
     jLabel2 = new javax.swing.JLabel();
-    jTextField2 = new javax.swing.JFormattedTextField(new Integer(0));
+    jTextField2 = new javax.swing.JFormattedTextField(new Integer(10));
     jTextField2.addFocusListener(new java.awt.event.FocusAdapter() {
       public void focusLost(java.awt.event.FocusEvent evt) {
         timeoutOut(evt);
@@ -112,7 +139,7 @@ public class Launch2 extends javax.swing.JFrame {
     });
     jcbSegundos = new javax.swing.JComboBox();
     jLabel3 = new javax.swing.JLabel();
-    jTextField3 = new javax.swing.JFormattedTextField(new Integer(0));
+    jTextField3 = new javax.swing.JFormattedTextField(new Integer(10));
     jTextField3.addFocusListener(new java.awt.event.FocusAdapter() {
       public void focusLost(java.awt.event.FocusEvent evt) {
         paquetesOut(evt);
@@ -154,7 +181,7 @@ public class Launch2 extends javax.swing.JFrame {
 
     tpFuentePaquetes.addTab("Selección de archivo", fcPaquetes);
 
-    /*Llenando la ista de interfaces*/
+        /*Llenando la ista de interfaces*/
     errbuf = new StringBuilder();
     int r = Pcap.findAllDevs(interfaces, errbuf);
     if (r == Pcap.NOT_OK || interfaces.isEmpty()) {
@@ -164,8 +191,14 @@ public class Launch2 extends javax.swing.JFrame {
     listInterfaces.setModel(new javax.swing.AbstractListModel() {
       //Creando la lista a partir del model que contiene a las interfaces
       String[] strings = a;
-      public int getSize() { return strings.length; }
-      public Object getElementAt(int i) { return strings[i]; }
+
+      public int getSize() {
+        return strings.length;
+      }
+
+      public Object getElementAt(int i) {
+        return strings[i];
+      }
     });
     listInterfaces.addMouseListener(new java.awt.event.MouseAdapter() {
       public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -182,15 +215,13 @@ public class Launch2 extends javax.swing.JFrame {
     btnComenzar.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         if (rdAire.isSelected() || rdArchivo.isSelected()) {
-          if(rdAire.isSelected() && listInterfaces.isSelectionEmpty()){
-            JOptionPane.showMessageDialog(null,"Selecciona una interfaz de red","Error",ERROR_MESSAGE);
-          }
-          else{
+          if (rdAire.isSelected() && listInterfaces.isSelectionEmpty()) {
+            JOptionPane.showMessageDialog(null, "Selecciona una interfaz de red", "Error", ERROR_MESSAGE);
+          } else {
             btnComenzarActionPerformed(evt);
           }
-        }
-        else{
-          JOptionPane.showMessageDialog(null,"Selecciona un modo de captura","Error",ERROR_MESSAGE);
+        } else {
+          JOptionPane.showMessageDialog(null, "Selecciona un modo de captura", "Error", ERROR_MESSAGE);
         }
 
       }
@@ -203,7 +234,7 @@ public class Launch2 extends javax.swing.JFrame {
 
     jLabel2.setText("No. paquetes - ");
 
-    jcbSegundos.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Segundos", "Milisegundos" }));
+    jcbSegundos.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"Segundos", "Milisegundos"}));
 
     jLabel3.setText("Infinite loop - ");
 
@@ -358,7 +389,7 @@ public class Launch2 extends javax.swing.JFrame {
 
   //Bind entre los radio buttons y el tab para elegir un archivo o una interfaz de red
   private void rdAireActionPerformed(java.awt.event.ActionEvent evt) {
-    if(rdAire.isSelected()){
+    if (rdAire.isSelected()) {
       tpFuentePaquetes.setSelectedIndex(1);
       tpFuentePaquetes.setEnabledAt(0, false);
       isFile = false;
@@ -368,13 +399,127 @@ public class Launch2 extends javax.swing.JFrame {
   }
 
   private void rdArchivoActionPerformed(java.awt.event.ActionEvent evt) {
-    if(rdArchivo.isSelected()){
+    if (rdArchivo.isSelected()) {
       tpFuentePaquetes.setSelectedIndex(0);
       tpFuentePaquetes.setEnabledAt(1, false);
-      isFile =  true;
+      isFile = true;
     }
     progresoConfiguracion = 1;
     pgConfiguracion.setValue(progresoConfiguracion);
+  }
+
+
+  private static String asString(final byte[] mac) {
+    final StringBuilder buf = new StringBuilder();
+    for (byte b : mac) {
+      if (buf.length() != 0) {
+        buf.append(':');
+      }
+      if (b >= 0 && b < 16) {
+        buf.append('0');
+      }
+      buf.append(Integer.toHexString((b < 0) ? b + 256 : b).toUpperCase());
+    }
+    return buf.toString();
+  }
+
+  /*Metodo para saber que elemento de la JList correspondiente a las interfaces fue seleccionado
+* el resultado se guarda en una variable PcapIf para ser usado después
+* una vez que se elige una interfaz, la lista se deshabilita y se aumenta el progress bar*/
+  private void listaClic(java.awt.event.MouseEvent evt) {
+    if (listInterfaces.getSelectedIndex() != -1) {
+      //Selection, enable filter
+      deviceSelected = interfaces.get(listInterfaces.getSelectedIndex());
+
+            /*int snaplen = 64 * 1024;           // Capture all packets, no trucation
+        int flags = Pcap.MODE_PROMISCUOUS; // capture all packets
+        int timeout = 10 * 1000;           // 10 seconds in millis
+        pcap = Pcap.openLive(deviceSelected.getName(), snaplen, flags, timeout, errbuf);*/
+      progresoConfiguracion = 2;
+      pgConfiguracion.setValue(progresoConfiguracion);
+      listInterfaces.setEnabled(false);
+
+    }
+  }
+
+  /*Metodo para verificar la asignación del Timeout usado por Pcap*/
+  private void timeoutOut(java.awt.event.FocusEvent evt) {
+    progresoConfiguracion = 3;
+    pgConfiguracion.setValue(progresoConfiguracion);
+    if ((int) jTextField2.getValue() < 0) {
+      jTextField2.setValue(10);
+    }
+  }
+
+  /*Metodo para verificar la asignación del número del paquetes a capturar*/
+  private void paquetesOut(java.awt.event.FocusEvent evt) {
+    progresoConfiguracion = 4;
+    pgConfiguracion.setValue(progresoConfiguracion);
+    if ((int) jTextField3.getValue() < 0) {
+      jTextField3.setValue(100);
+    }
+  }
+
+  /*Metodo usado para obtener la ruta de un archivo que sera usado por Pcap para analizar sus paquetes*/
+  private void fileSelection(java.awt.event.ActionEvent evt) {
+    Date id =  new Date();
+    File archivo = fcPaquetes.getSelectedFile();
+    nombreArchivo = "temp"+id.getTime()+".pcap";
+
+    File receptor  =  new File(nombreArchivo);
+    try {
+      copyFileUsingStream(archivo,receptor);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private static void copyFileUsingStream(File source, File dest) throws IOException {
+    InputStream is = null;
+    OutputStream os = null;
+    try {
+      is = new FileInputStream(source);
+      os = new FileOutputStream(dest);
+      byte[] buffer = new byte[1024];
+      int length;
+      while ((length = is.read(buffer)) > 0) {
+        os.write(buffer, 0, length);
+      }
+    } finally {
+      is.close();
+      os.close();
+    }
+  }
+  /*Metodo para recopilar los datos finales de configuración y pasar al siguiente frame que realizará
+* la conexión con Pcap*/
+  private void btnComenzarActionPerformed(java.awt.event.ActionEvent evt) {
+    //Viendo si se tiene un loop infinito
+    isInfinite = jcbInfinite.isSelected();
+    filtro = jTextField1.getText();
+    numPaquetes = (int) jTextField3.getValue();
+    //Poniendo por default 100 paquetes capturados
+    if (numPaquetes == 0) {
+      numPaquetes = 100;
+    }
+    //viendo el timeout con segundos o milisegundos
+    timeout = (int) jTextField2.getValue();
+    if (jcbSegundos.getSelectedIndex() == 0) {
+      //milisegundos
+      //Poniendo por default 10 segundos
+      if (timeout == 0) {
+        timeout = 10000; //10 segundos
+      } else {
+        timeout = timeout * 1000;
+      }
+    }
+    System.out.println("filtro: " + filtro + " INFINITE: " + isInfinite + " isFile: " + isFile + " timeout: " + timeout + " num: " + numPaquetes
+      + " nombreArchivo: " + nombreArchivo);
+    System.out.println("Interfaz: " + deviceSelected);
+    new Protocolos(deviceSelected, timeout, numPaquetes, isFile, isInfinite, filtro, nombreArchivo).setVisible(true);
+    if(isFile==true){
+      isInfinite =  true;
+    }
+    this.setVisible(false);
   }
 
   public static void main(String args[]) {
@@ -445,87 +590,4 @@ public class Launch2 extends javax.swing.JFrame {
   private javax.swing.JTabbedPane tpFuentePaquetes;
   private javax.swing.JFormattedTextField txBytes;
   // End of variables declaration
-  private static String asString(final byte[] mac) {
-    final StringBuilder buf = new StringBuilder();
-    for (byte b : mac) {
-      if (buf.length() != 0) {
-        buf.append(':');
-      }
-      if (b >= 0 && b < 16) {
-        buf.append('0');
-      }
-      buf.append(Integer.toHexString((b < 0) ? b + 256 : b).toUpperCase());
-    }
-    return buf.toString();
-  }
-
-  /*Metodo para saber que elemento de la JList correspondiente a las interfaces fue seleccionado
-  * el resultado se guarda en una variable PcapIf para ser usado después
-  * una vez que se elige una interfaz, la lista se deshabilita y se aumenta el progress bar*/
-  private void listaClic(java.awt.event.MouseEvent evt) {
-    if (listInterfaces.getSelectedIndex() != -1) {
-      //Selection, enable filter
-      deviceSelected = interfaces.get(listInterfaces.getSelectedIndex());
-
-        /*int snaplen = 64 * 1024;           // Capture all packets, no trucation
-        int flags = Pcap.MODE_PROMISCUOUS; // capture all packets
-        int timeout = 10 * 1000;           // 10 seconds in millis
-
-        pcap = Pcap.openLive(deviceSelected.getName(), snaplen, flags, timeout, errbuf);*/
-      progresoConfiguracion = 2;
-      pgConfiguracion.setValue(progresoConfiguracion);
-      listInterfaces.setEnabled(false);
-
-    }
-  }
-  /*Metodo para verificar la asignación del Timeout usado por Pcap*/
-  private void timeoutOut(java.awt.event.FocusEvent evt) {
-    progresoConfiguracion = 3;
-    pgConfiguracion.setValue(progresoConfiguracion);
-    if((int)jTextField2.getValue()<0){
-      jTextField2.setValue(10);
-    }
-  }
-  /*Metodo para verificar la asignación del número del paquetes a capturar*/
-  private void paquetesOut(java.awt.event.FocusEvent evt) {
-    progresoConfiguracion = 4;
-    pgConfiguracion.setValue(progresoConfiguracion);
-    if((int)jTextField3.getValue()<0){
-      jTextField3.setValue(100);
-    }
-  }
-  /*Metodo usado para obtener la ruta de un archivo que sera usado por Pcap para analizar sus paquetes*/
-  private void fileSelection(java.awt.event.ActionEvent evt){
-    File archivo = fcPaquetes.getSelectedFile();
-    nombreArchivo = archivo.getName();
-  }
-  /*Metodo para recopilar los datos finales de configuración y pasar al siguiente frame que realizará
-  * la conexión con Pcap*/
-  private void btnComenzarActionPerformed(java.awt.event.ActionEvent evt) {
-    //Viendo si se tiene un loop infinito
-    isInfinite = jcbInfinite.isSelected();
-    filtro = jTextField1.getText();
-    numPaquetes = (int)jTextField3.getValue();
-    //Poniendo por default 100 paquetes capturados
-    if(numPaquetes==0){
-      numPaquetes=100;
-    }
-    //viendo el timeout con segundos o milisegundos
-    timeout = (int)jTextField2.getValue();
-    if(jcbSegundos.getSelectedIndex()==0) {
-      //milisegundos
-     //Poniendo por default 10 segundos
-      if(timeout==0){
-       timeout=10000; //10 segundos
-      }
-      else {
-        timeout = timeout * 1000;
-      }
-    }
-    System.out.println("filtro: "+filtro+" INFINITE: "+isInfinite+" isFile: "+isFile+" timeout: "+timeout+" num: "+numPaquetes+
-    " nombreArchivo: "+nombreArchivo);
-    System.out.println("p: "+deviceSelected);
-    new Protocolos(deviceSelected,timeout,numPaquetes,isFile,isInfinite,filtro,nombreArchivo).setVisible(true);
-    this.setVisible(false);
-  }
 }

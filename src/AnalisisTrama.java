@@ -41,11 +41,16 @@ public class AnalisisTrama {
     private int version;
     private int headerLength;
     private int tos;
+    private int tosCode;
     private int tosECN;
     private int length;
     private int Id;
     private int flags;
-    private String flagsDesc;
+    private int flagReserved;
+    private int flagDF;
+    private int flagMF;
+    private String flagDFDesc;
+    private String flagMFDesc;
     private int offset;
     private int ttl;
     private int protocoloId;
@@ -82,6 +87,11 @@ public class AnalisisTrama {
     private byte tiempoRespuesta;
     private String grupo;
     private String checksumIGMP;
+    /*Variables ICMP*/
+    private int tipoICMP;
+    private int codigoICMP;
+    private String descripcionICMP;
+    private int checksumICMP;
 
     //Capa Fisica
     private byte[] infoHexadecimal;
@@ -118,42 +128,72 @@ public class AnalisisTrama {
                 AnalizarIGMP();
             } else {
                 protocolo = "Ipv4";
-                setVersion(analizadorIP4.version());
-                setHeaderLength(analizadorIP4.hlen());
-                setTos(analizadorIP4.tos());
-                setTosECN(analizadorIP4.tos_ECN());
-                setLength(analizadorIP4.length());
-                setId(analizadorIP4.id());
-                setFlags(analizadorIP4.flags());
-                setFlagsDesc(analizadorIP4.flags_DFDescription());
-                setTtl(analizadorIP4.ttl());
-                setProtocoloId(analizadorIP4.type());
-                setChecksum(analizadorIP4.checksum());
+                analizarIPv4();
                 if (paqueteActual.hasHeader(analizadorUDP)) {
                     protocolo = "UDP";
-                    setSrcPort(analizadorUDP.source());
-                    setDestPort(analizadorUDP.destination());
-                    setLengthUDP(analizadorUDP.length());
-                    setChecksumUDP(analizadorUDP.checksum());
+                    analizarUDP();
                 } else if (paqueteActual.hasHeader(analizadorTCP)) {
                     protocolo = "TCP";
-                    setSrcPort(analizadorTCP.source());
-                    setDestPort(analizadorTCP.destination());
-                    setSeq(analizadorTCP.seq());
-                    setAck(analizadorTCP.ack());
-                    setHlenTCP(analizadorTCP.hlen());
-                    setFlagsTCP(analizadorTCP.flags());
-                    setFlagACK(analizadorTCP.flags_ACK());
-                    setFlagCWR(analizadorTCP.flags_CWR());
-                    setFlagECE(analizadorTCP.flags_ECE());
-                    setFlagFIN(analizadorTCP.flags_FIN());
-                    setFlagPSH(analizadorTCP.flags_PSH());
-                    setFlagRST(analizadorTCP.flags_RST());
-                    setFlagSYN(analizadorTCP.flags_SYN());
-                    setFlagURG(analizadorTCP.flags_URG());
-                    setWindow(analizadorTCP.window());
-                    setChecksumTCP(analizadorTCP.checksum());
-                    setUrgent(analizadorTCP.urgent());
+                    analizarTCP();
+                } else if(paqueteActual.hasHeader(analizadorICMP)){
+                  protocolo = "ICMP";
+                  setChecksumICMP(analizadorICMP.checksum());
+                  setCodigoICMP(analizadorICMP.code());
+                  setTipoICMP(analizadorICMP.type());
+                  setDescripcionICMP(analizadorICMP.getDescription());
+                  //Chequeo manual de la description de ICMP ya que el metodo a retornado null en algunas ocasiones
+                  if(descripcionICMP == null){
+                    if(tipoICMP == 0){
+                      descripcionICMP = "echo reply";
+                    }else if(tipoICMP == 3){
+                      switch (codigoICMP){
+                        case 0: descripcionICMP = "network unreachable"; break;
+                        case 1: descripcionICMP = "host unreachable"; break;
+                        case 2: descripcionICMP = "protocol unreachable"; break;
+                        case 3: descripcionICMP = "port unreachable"; break;
+                        case 4: descripcionICMP = "fragmentation needed, but DF bit set"; break;
+                        case 5: descripcionICMP = "source route failed"; break;
+                        case 6: descripcionICMP = "destination network unknown"; break;
+                        case 7: descripcionICMP = "destination network unknown"; break;
+                        case 9: descripcionICMP = "destination network administratevily prohibited"; break;
+                        case 10: descripcionICMP = "destination host administratevily prohibited"; break;
+                        case 11: descripcionICMP = "network unreachable for TOS"; break;
+                        case 12: descripcionICMP = "host unreachable for TOS"; break;
+                        default: descripcionICMP = "adentro afuera lento lento";
+                      }
+                    }else if(tipoICMP == 4){
+                      descripcionICMP = "source quench";
+                    }else if(tipoICMP == 5){
+                      switch (codigoICMP){
+                        case 0:descripcionICMP = "redirect for network"; break;
+                        case 1:descripcionICMP = "redirect for host"; break;
+                        case 2:descripcionICMP = "redirect for TOS and network"; break;
+                        case 3:descripcionICMP = "redirect for TOS and host"; break;
+                      }
+                    }else if(tipoICMP == 8){
+                      descripcionICMP = "echo request";
+                    }else if(tipoICMP == 11){
+                      if(codigoICMP == 0){
+                        descripcionICMP = "time exceeded during transit";
+                      }else{
+                        descripcionICMP = "time exceeded during assembly";
+                      }
+                    }else if(tipoICMP == 12){
+                      if(codigoICMP == 0){
+                        descripcionICMP = "IP header bad";
+                      }else{
+                        descripcionICMP = "required option missed";
+                      }
+                    }else if(tipoICMP == 13){
+                      descripcionICMP = "timestamp request";
+                    }else if(tipoICMP == 14){
+                      descripcionICMP = "timestamp reply";
+                    }else if(tipoICMP == 17){
+                      descripcionICMP = "address mask request";
+                    }else {
+                      descripcionICMP = "address mask reply";
+                    }
+                  }//null - description
                 }
             }
 
@@ -184,6 +224,52 @@ public class AnalisisTrama {
         return buf.toString();
     }
 
+    private void analizarIPv4() {
+        setVersion(analizadorIP4.version());
+        setHeaderLength(analizadorIP4.hlen());
+        setTos(analizadorIP4.tos());
+        setTosCode(analizadorIP4.tos_Codepoint());
+        setTosECN(analizadorIP4.tos_ECN());
+        setLength(analizadorIP4.length());
+        setId(analizadorIP4.id());
+        setFlags(analizadorIP4.flags());
+        setFlagReserved(analizadorIP4.flags_Reserved());
+        setFlagDF(analizadorIP4.flags_DF());
+        setFlagMF(analizadorIP4.flags_MF());
+        setFlagDFDesc(analizadorIP4.flags_DFDescription());
+        setFlagMFDesc(analizadorIP4.flags_MFDescription());
+        setTtl(analizadorIP4.ttl());
+        setProtocoloId(analizadorIP4.type());
+        setChecksum(analizadorIP4.checksum());
+    }
+
+    private void analizarUDP(){
+        setSrcPort(analizadorUDP.source());
+        setDestPort(analizadorUDP.destination());
+        setLengthUDP(analizadorUDP.length());
+        setChecksumUDP(analizadorUDP.checksum());
+    }
+
+    private void analizarTCP() {
+        setSrcPort(analizadorTCP.source());
+        setDestPort(analizadorTCP.destination());
+        setSeq(analizadorTCP.seq());
+        setAck(analizadorTCP.ack());
+        setHlenTCP(analizadorTCP.hlen());
+        setFlagsTCP(analizadorTCP.flags());
+        setFlagACK(analizadorTCP.flags_ACK());
+        setFlagCWR(analizadorTCP.flags_CWR());
+        setFlagECE(analizadorTCP.flags_ECE());
+        setFlagFIN(analizadorTCP.flags_FIN());
+        setFlagPSH(analizadorTCP.flags_PSH());
+        setFlagRST(analizadorTCP.flags_RST());
+        setFlagSYN(analizadorTCP.flags_SYN());
+        setFlagURG(analizadorTCP.flags_URG());
+        setWindow(analizadorTCP.window());
+        setChecksumTCP(analizadorTCP.checksum());
+        setUrgent(analizadorTCP.urgent());
+    }
+
     //Analisis del protocolo IGMP
     private void AnalizarIGMP(){
         int indiceIGMP = ((paqueteActual.getHeader(analizadorIP4).hlen()*32)/8)+14;
@@ -211,7 +297,10 @@ public class AnalisisTrama {
         }
         System.out.println("IGMP");
     }
+    //Metodo para analisis ICMP
+    private void analizarICMP(){
 
+    }
 
     /*Metodos Auxiliares*/
     //Retorna un String con la fecha y tiempo de captura del paquete
@@ -427,14 +516,6 @@ public class AnalisisTrama {
         this.tosECN = tosDesc;
     }
 
-    public String getFlagsDesc() {
-        return flagsDesc;
-    }
-
-    public void setFlagsDesc(String flagsDesc) {
-        this.flagsDesc = flagsDesc;
-    }
-
     public int getSrcPort() {
         return srcPort;
     }
@@ -619,6 +700,54 @@ public class AnalisisTrama {
         this.checksumIGMP = checksumIGMP;
     }
 
+    public int getTosCode() {
+        return tosCode;
+    }
+
+    public void setTosCode(int tosCode) {
+        this.tosCode = tosCode;
+    }
+
+    public int getFlagReserved() {
+        return flagReserved;
+    }
+
+    public void setFlagReserved(int flagReserved) {
+        this.flagReserved = flagReserved;
+    }
+
+    public int getFlagDF() {
+        return flagDF;
+    }
+
+    public void setFlagDF(int flagDF) {
+        this.flagDF = flagDF;
+    }
+
+    public int getFlagMF() {
+        return flagMF;
+    }
+
+    public void setFlagMF(int flagMF) {
+        this.flagMF = flagMF;
+    }
+
+    public String getFlagDFDesc() {
+        return flagDFDesc;
+    }
+
+    public void setFlagDFDesc(String flagDFDesc) {
+        this.flagDFDesc = flagDFDesc;
+    }
+
+    public String getFlagMFDesc() {
+        return flagMFDesc;
+    }
+
+    public void setFlagMFDesc(String flagMFDesc) {
+        this.flagMFDesc = flagMFDesc;
+    }
+
     public byte getTipoIGMPbyte() {
         return tipoIGMPbyte;
     }
@@ -626,4 +755,36 @@ public class AnalisisTrama {
     public void setTipoIGMPbyte(byte tipoIGMPbyte) {
         this.tipoIGMPbyte = tipoIGMPbyte;
     }
+
+  public int getTipoICMP() {
+    return tipoICMP;
+  }
+
+  public void setTipoICMP(int tipoICMP) {
+    this.tipoICMP = tipoICMP;
+  }
+
+  public int getCodigoICMP() {
+    return codigoICMP;
+  }
+
+  public void setCodigoICMP(int codigoICMP) {
+    this.codigoICMP = codigoICMP;
+  }
+
+  public String getDescripcionICMP() {
+    return descripcionICMP;
+  }
+
+  public void setDescripcionICMP(String descripcionICMP) {
+    this.descripcionICMP = descripcionICMP;
+  }
+
+  public int getChecksumICMP() {
+    return checksumICMP;
+  }
+
+  public void setChecksumICMP(int checksumICMP) {
+    this.checksumICMP = checksumICMP;
+  }
 }

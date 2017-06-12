@@ -1,6 +1,10 @@
 import org.jnetpcap.PcapIf;;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -38,7 +42,7 @@ public class Protocolos extends javax.swing.JFrame {
     private CapturaTramas capturador;
     //Variable para controlar el estado de recepcion/pausa de paquetes
     private boolean isReceiving;
-
+    private boolean rememberInfinite;
     //Contructor con los params recibidos del frame anterior
     public Protocolos(PcapIf deviceSelected, int timeout, int numPaquetes, boolean isFile,
             boolean isInfinite, String filtro, String nombreArchivo) {
@@ -52,10 +56,35 @@ public class Protocolos extends javax.swing.JFrame {
         this.timeout = timeout;
         this.numPaquetes = numPaquetes;
         this.nombreArchivo = nombreArchivo;
-        this.isReceiving = false;
-
+        this.isReceiving = true;
+        this.rememberInfinite = isInfinite;
     /*Creando la UI*/
         initComponents();
+    }
+
+    class MenuActionListener extends Component implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            try {
+                System.out.println("Selected: " + e.getActionCommand());
+                String nombreArchivo = "captura.pcap"; // por defecto
+                JFileChooser file = new JFileChooser();
+                int aux = file.showOpenDialog(this);
+                if (aux == JFileChooser.APPROVE_OPTION) {
+                    nombreArchivo = file.getSelectedFile().getAbsolutePath();
+                }
+                if (!nombreArchivo.equals("")) {
+                    capturador.guardarTramas(numPaquetes, nombreArchivo);
+                    JOptionPane.showMessageDialog(null, "Archivo guardado");
+                } else {
+                    System.out.println("No se pudo");
+                    JOptionPane.showMessageDialog(null, "No se pudo guardar =(");
+
+                }
+            } catch (Exception error) {
+                System.out.println("ERROR");
+                JOptionPane.showMessageDialog(null, "Epale, epale ocurrio un error");
+            }
+        }
     }
 
   /*Seccion para la creación de la UI, esta sección no debe ser modificada salvo casos muy específicos*/
@@ -78,6 +107,7 @@ public class Protocolos extends javax.swing.JFrame {
     jMenuBar1 = new javax.swing.JMenuBar();
     jMenu1 = new javax.swing.JMenu();
     jMenu2 = new javax.swing.JMenu();
+    menuItem = new javax.swing.JMenuItem();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -128,10 +158,12 @@ public class Protocolos extends javax.swing.JFrame {
     jScrollPane3.setViewportView(listaOriginal);
 
     jMenu1.setText("File");
+    jMenu1.setMnemonic(KeyEvent.VK_F);
     jMenuBar1.add(jMenu1);
 
-    jMenu2.setText("Edit");
-    jMenuBar1.add(jMenu2);
+    menuItem.setText("Save");
+    menuItem.addActionListener(new MenuActionListener());
+    jMenu1.add(menuItem);
 
     setJMenuBar(jMenuBar1);
 
@@ -211,7 +243,25 @@ public class Protocolos extends javax.swing.JFrame {
     //Boton - Iniciar: Comienza o termina la recepción de paquetes
     private void btnIniciarActionPerformed(java.awt.event.ActionEvent evt) {
         //Iniciando la recepción de paquetes
-        if (!isReceiving) {
+        //Lectura de archivo
+        if(isFile){
+          if(isReceiving == true){
+            System.out.println("Iniciando con archivo");
+            capturador =  new CapturaTramas(nombreArchivo);
+            capturador.conectarPcap();
+            AdministradorPaquetes administradorPaquetes = new AdministradorPaquetes();
+            administradorPaquetes.start();
+            //Para leer el archivo completo
+            isInfinite = true;
+            //Cambio estado del boton
+            isReceiving = false;
+          }else{
+            isReceiving = true;
+          }
+        }else{
+          System.out.println("Iniciando con captura al aire");
+          //Captura al aire
+          if (isReceiving == true) {
             //Generando conexión con pcap
             capturador = new CapturaTramas(deviceSelected.getName(), (64 * 1024), timeout, filtro);
             capturador.conectarPcap();
@@ -219,16 +269,20 @@ public class Protocolos extends javax.swing.JFrame {
             AdministradorPaquetes administradorPaquetes = new AdministradorPaquetes();
             administradorPaquetes.start();
             //Realizando un toggle
-            isReceiving = true;
-        } else {
+            isReceiving = false;
+            if(rememberInfinite == true){
+              isInfinite = true;
+            }
+          }else {
             //Pausando la obtención de paquetes, mediante el cierre de la conexión
             capturador.pausarObtenecion();
+            isReceiving = true;
+          }
         }
     }
 
     //Obteniendo la información de una trama
     private void getTrama(java.awt.event.MouseEvent evt) {
-        System.out.println("ouch");
         int indiceTrama = tablaPaquetes.getSelectedRow();
         //Mostrando información
         if (indiceTrama > 0) {
@@ -255,10 +309,43 @@ public class Protocolos extends javax.swing.JFrame {
             } else if (tramaActual.getProtocolo().equals("TCP")) {
                 mostrarProtocoloTCP(tramaActual);
             }else if(tramaActual.getProtocolo().equals("IGMP")){
-              mostrarProtocoloIGMP(tramaActual);
+                mostrarProtocoloIGMP(tramaActual);
+            }else if(tramaActual.getProtocolo().equals("ICMP")){
+                mostrarProtocoloICMP(tramaActual);
             }
         }
     }
+  private void mostrarProtocoloICMP(AnalisisTrama tramaActual){
+    StringBuilder informacion =  new StringBuilder();
+    DefaultListModel modelo =  new DefaultListModel();
+    modelo =  mostarProtocoloIPv4(tramaActual);
+
+    //Agregando el titulo para un paquete ICMP
+    informacion.append("---Protocolo ICMP---");
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    //Agregando el Tipo
+    informacion.append("Tipo ICMP: "+tramaActual.getTipoICMP());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+    //Agregando Codigo
+    informacion.append("Codigo: "+tramaActual.getCodigoICMP());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    //Agregando Description
+    informacion.append("Descripcion: "+tramaActual.getDescripcionICMP());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    //Agregando el Checkdsum
+    informacion.append("Checkusm: "+tramaActual.getChecksumICMP());
+    modelo.addElement(informacion.toString());
+    informacion.setLength(0);
+
+    listaAnalisis.setModel(modelo);
+  }
   private void mostrarProtocoloIGMP(AnalisisTrama tramaActual){
     StringBuilder informacion = new StringBuilder();
     DefaultListModel modelo = new DefaultListModel();
@@ -286,72 +373,13 @@ public class Protocolos extends javax.swing.JFrame {
     listaAnalisis.setModel(modelo);
 
   }
-  private void mostarProtocolo(AnalisisTrama tramaActual) {
-    StringBuilder informacion = new StringBuilder();
-    DefaultListModel modelo = new DefaultListModel();
-
-    informacion.append("Protocolo: "+tramaActual.getProtocolo());
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
-
-    informacion.append(String.format("0%s .... = Version: %d",
-            Integer.toBinaryString(tramaActual.getVersion()),
-            tramaActual.getVersion()));
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
-
-    informacion.append(String.format(".... 0%s = Header length: %d bytes (%X)",
-            Integer.toBinaryString(tramaActual.getHeaderLength()), tramaActual.getHeaderLength()*4,
-            tramaActual.getHeaderLength()));
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
-
-    informacion.append(String.format("0x%02X = Type of service: %s", tramaActual.getTos(),
-            tramaActual.getTos()));
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
-
-    informacion.append("Differentiated services: " + tramaActual.getTosECN());
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
-
-    informacion.append("Total Length: " + tramaActual.getLength());
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
-
-    informacion.append(String.format("Identifier: 0x%04X (%d)\n", tramaActual.getId(), tramaActual
-            .getId()));
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
-
-    informacion.append(String.format("Flags: 0x%02X", tramaActual.getFlags()));
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
-
-    informacion.append("Flags Description:"+ tramaActual.getFlagsDesc());
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
-
-    informacion.append("Fragment Offset: " + tramaActual.getOffset());
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
-
-    informacion.append("Time to live: " + tramaActual.getTtl());
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
-
-    informacion.append(String.format("Header Checksum: 0x%04X\n", tramaActual.getChecksum()));
-    modelo.addElement(informacion.toString());
-    informacion.setLength(0);
-
-    listaAnalisis.setModel(modelo);
-  }
   /*Declaración de metodos de utilería en la aplicación*/
+  /*Retorno el modelo para seguir modificandola ya que casi T0DO es ipv4*/
     private DefaultListModel mostarProtocoloIPv4(AnalisisTrama tramaActual) {
         StringBuilder informacion = new StringBuilder();
         DefaultListModel modelo = new DefaultListModel();
 
-        informacion.append("--Protocolo: IPv4--");
+        informacion.append("---- Protocolo: IPv4 ----");
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
@@ -366,12 +394,15 @@ public class Protocolos extends javax.swing.JFrame {
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
-        informacion.append(String.format("0x%02X = Type of service: %s", tramaActual.getTos(),
-                tramaActual.getTos()));
+        informacion.append(String.format("Differentiated services: 0x%02X", tramaActual.getTos()));
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
-        informacion.append("Differentiated services: " + tramaActual.getTosECN());
+        informacion.append("Differentiated services Codepoint: " + tramaActual.getTosCode());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Explicit Congestion Notification: " + tramaActual.getTosECN());
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
@@ -388,7 +419,16 @@ public class Protocolos extends javax.swing.JFrame {
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
-        informacion.append("Flags Description:" + tramaActual.getFlagsDesc());
+        informacion.append(String.format("%d... .... = Reserved Bit: %s set\n",
+                tramaActual.getFlagReserved(), (tramaActual.getFlagReserved() == 1 ? "" : "not")));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+        informacion.append(String.format(".%d.. .... = Don't fragment: %s\n",
+                tramaActual.getFlagDF(), tramaActual.getFlagDFDesc()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+        informacion.append(String.format("..%d. .... = More fragments: %s\n",
+                tramaActual.getFlagMF(), tramaActual.getFlagMFDesc()));
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
@@ -413,7 +453,7 @@ public class Protocolos extends javax.swing.JFrame {
 
         modelo = mostarProtocoloIPv4(tramaActual);
 
-        informacion.append("-- Protocolo: UDP --");
+        informacion.append("---- Protocolo: UDP ----");
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
@@ -441,7 +481,83 @@ public class Protocolos extends javax.swing.JFrame {
         DefaultListModel modelo = new DefaultListModel();
 
         modelo = mostarProtocoloIPv4(tramaActual);
-        informacion.append("-- Protocolo: TCP --");
+        informacion.append("---- Protocolo: TCP ----");
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Source port: " + tramaActual.getSrcPort());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Destination port: " + tramaActual.getDestPort());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Secuence number: " + tramaActual.getSeq());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Acknowledgment: " + tramaActual.getAck());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Header length: " + tramaActual.getHlenTCP());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format("Flags: 0x%03X", tramaActual.getFlags()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format(".... %d... .... = CWR: %s",
+                (tramaActual.getFlagCWR() ? 1 : 0), tramaActual.getFlagCWR()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format(".... .%d.. .... = ECN-Echo: %s",
+                (tramaActual.getFlagECE() ? 1 : 0), tramaActual.getFlagECE()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format(".... ..%d. .... = Urgent: %s",
+                (tramaActual.getFlagURG() ? 1 : 0), tramaActual.getFlagURG()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format(".... ...%d .... = Acknowledgment: %s",
+                (tramaActual.getFlagACK() ? 1 : 0), tramaActual.getFlagACK()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format(".... .... %d... = Push: %s",
+                (tramaActual.getFlagPSH() ? 1 : 0), tramaActual.getFlagPSH()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format(".... .... .%d.. = Reset: %s",
+                (tramaActual.getFlagPSH() ? 1 : 0), tramaActual.getFlagRST()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format(".... .... ..%d. = Syn: %s",
+                (tramaActual.getFlagSYN() ? 1 : 0), tramaActual.getFlagSYN()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format(".... .... ...%d = Fin: %s",
+                (tramaActual.getFlagFIN() ? 1 : 0), tramaActual.getFlagFIN()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Window size value: " + tramaActual.getWindow());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(String.format("Checksum: 0x%04X", tramaActual.getChecksumTCP()));
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Urgent point: " + tramaActual.getUrgent());
         modelo.addElement(informacion.toString());
         informacion.setLength(0);
 
@@ -483,7 +599,13 @@ public class Protocolos extends javax.swing.JFrame {
                 while (isInfinite) {
                     tramaActual = capturador.obtenerPaquete();
                     tramaActual.setNumero(i);
-                    tramaActual.analizarPaquete();
+                    try{
+                      tramaActual.analizarPaquete();
+                    }catch(Exception e){
+                      isInfinite =  false;
+                      System.out.println("Termine lectura de paquetes");
+                    }
+
                     analisisTramas.add(tramaActual);
                     //Guardar datos en la tabla
                     argegarFila();
@@ -539,5 +661,6 @@ public class Protocolos extends javax.swing.JFrame {
     private javax.swing.JList listaOriginal;
     private javax.swing.JTable tablaPaquetes;
     private javax.swing.JTextField txtFiltro;
+    private javax.swing.JMenuItem menuItem;
     // End of variables declaration
 }
