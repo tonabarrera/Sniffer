@@ -27,6 +27,8 @@ public class AnalisisTrama {
     private String protocolo;
     private int tamaño;
     private String info;
+
+    private String tipoTrama;
     /*-------Agregar aqui las variable necesarias para cada protocolo-------------*/
   /*Variables para el análisis de protocolos, ordenados por prioridad segun modelo TCP/IP*/
     //Capa Transporte
@@ -93,6 +95,31 @@ public class AnalisisTrama {
     private String descripcionICMP;
     private int checksumICMP;
 
+    //Variables para analizar el tipo de trama IEEE-802.2
+    private int longitud;
+    private String MACO;
+    private String MACD;
+    private int ssap;
+    private String c_r;
+    private String service;
+    private String DSAP;
+    private String SSAP;
+    private String control;
+    private String tipo;
+    private String PF;
+    private int snrm;
+    private int snrme;
+    private int sabm;
+    private int sabme;
+    private int ui;
+    private int ur;
+    private int disc;
+    private int rst;
+    private int xid;
+    private String NR;
+    private String codigo;
+    private String NS;
+
     //Capa Fisica
     private byte[] infoHexadecimal;
 
@@ -120,95 +147,136 @@ public class AnalisisTrama {
         calcularIp();
         //Copiando info en hexadecimal
         accederHexadecimal();
-        //Obteniendo protocolo usado + Análisis de protocolos
-        if (paqueteActual.hasHeader(analizadorIP4)) {
-            //Análisis del IPv4 agregar codigo para el analisis aqui
-            if (paqueteActual.getHeader(analizadorIP4).type() == 2) {
-                protocolo = "IGMP";
-                AnalizarIGMP();
-            } else {
-                protocolo = "Ipv4";
-                analizarIPv4();
-                if (paqueteActual.hasHeader(analizadorUDP)) {
-                    protocolo = "UDP";
-                    analizarUDP();
-                } else if (paqueteActual.hasHeader(analizadorTCP)) {
-                    protocolo = "TCP";
-                    analizarTCP();
-                } else if(paqueteActual.hasHeader(analizadorICMP)){
-                  protocolo = "ICMP";
-                  setChecksumICMP(analizadorICMP.checksum());
-                  setCodigoICMP(analizadorICMP.code());
-                  setTipoICMP(analizadorICMP.type());
-                  setDescripcionICMP(analizadorICMP.getDescription());
-                  //Chequeo manual de la description de ICMP ya que el metodo a retornado null en algunas ocasiones
-                  if(descripcionICMP == null){
-                    if(tipoICMP == 0){
-                      descripcionICMP = "echo reply";
-                    }else if(tipoICMP == 3){
-                      switch (codigoICMP){
-                        case 0: descripcionICMP = "network unreachable"; break;
-                        case 1: descripcionICMP = "host unreachable"; break;
-                        case 2: descripcionICMP = "protocol unreachable"; break;
-                        case 3: descripcionICMP = "port unreachable"; break;
-                        case 4: descripcionICMP = "fragmentation needed, but DF bit set"; break;
-                        case 5: descripcionICMP = "source route failed"; break;
-                        case 6: descripcionICMP = "destination network unknown"; break;
-                        case 7: descripcionICMP = "destination network unknown"; break;
-                        case 9: descripcionICMP = "destination network administratevily prohibited"; break;
-                        case 10: descripcionICMP = "destination host administratevily prohibited"; break;
-                        case 11: descripcionICMP = "network unreachable for TOS"; break;
-                        case 12: descripcionICMP = "host unreachable for TOS"; break;
-                        default: descripcionICMP = "adentro afuera lento lento";
-                      }
-                    }else if(tipoICMP == 4){
-                      descripcionICMP = "source quench";
-                    }else if(tipoICMP == 5){
-                      switch (codigoICMP){
-                        case 0:descripcionICMP = "redirect for network"; break;
-                        case 1:descripcionICMP = "redirect for host"; break;
-                        case 2:descripcionICMP = "redirect for TOS and network"; break;
-                        case 3:descripcionICMP = "redirect for TOS and host"; break;
-                      }
-                    }else if(tipoICMP == 8){
-                      descripcionICMP = "echo request";
-                    }else if(tipoICMP == 11){
-                      if(codigoICMP == 0){
-                        descripcionICMP = "time exceeded during transit";
-                      }else{
-                        descripcionICMP = "time exceeded during assembly";
-                      }
-                    }else if(tipoICMP == 12){
-                      if(codigoICMP == 0){
-                        descripcionICMP = "IP header bad";
-                      }else{
-                        descripcionICMP = "required option missed";
-                      }
-                    }else if(tipoICMP == 13){
-                      descripcionICMP = "timestamp request";
-                    }else if(tipoICMP == 14){
-                      descripcionICMP = "timestamp reply";
-                    }else if(tipoICMP == 17){
-                      descripcionICMP = "address mask request";
-                    }else {
-                      descripcionICMP = "address mask reply";
-                    }
-                  }//null - description
-                }
-            }
 
-        } else if (paqueteActual.hasHeader(analizadorIP6)) {
-            //Análisis IPv6
-            protocolo = "Ipv6";
-        } else if (paqueteActual.hasHeader(analizadorICMP)) {
-            //agregar codigo para el analisis aqui
-            protocolo = "ICMP";
-        } else if (paqueteActual.hasHeader(analizadorARP)) {
-            //agregar codigo para el analisis aqui
-            protocolo = "ARP";
+        longitud = (paqueteActual.getUByte(12) * 256) + paqueteActual.getUByte(13);
+        if (longitud < 1500) {
+            tipoTrama = "IEEE.802.2";
+            protocolo="LLC";
+            analizarIEEE();
+        } else {
+            tipoTrama="Ethernet";
+            //Obteniendo protocolo usado + Análisis de protocolo
+            if (paqueteActual.hasHeader(analizadorIP4)) {
+                //Análisis del IPv4 agregar codigo para el analisis aqui
+                if (paqueteActual.getHeader(analizadorIP4).type() == 2) {
+                    protocolo = "IGMP";
+                    AnalizarIGMP();
+                } else {
+                    protocolo = "Ipv4";
+                    analizarIPv4();
+                    if (paqueteActual.hasHeader(analizadorUDP)) {
+                        protocolo = "UDP";
+                        analizarUDP();
+                    } else if (paqueteActual.hasHeader(analizadorTCP)) {
+                        protocolo = "TCP";
+                        analizarTCP();
+                    } else if (paqueteActual.hasHeader(analizadorICMP)) {
+                        protocolo = "ICMP";
+                        setChecksumICMP(analizadorICMP.checksum());
+                        setCodigoICMP(analizadorICMP.code());
+                        setTipoICMP(analizadorICMP.type());
+                        setDescripcionICMP(analizadorICMP.getDescription());
+                        //Chequeo manual de la description de ICMP ya que el metodo a retornado null en algunas ocasiones
+                        if (descripcionICMP == null) {
+                            if (tipoICMP == 0) {
+                                descripcionICMP = "echo reply";
+                            } else if (tipoICMP == 3) {
+                                switch (codigoICMP) {
+                                    case 0:
+                                        descripcionICMP = "network unreachable";
+                                        break;
+                                    case 1:
+                                        descripcionICMP = "host unreachable";
+                                        break;
+                                    case 2:
+                                        descripcionICMP = "protocol unreachable";
+                                        break;
+                                    case 3:
+                                        descripcionICMP = "port unreachable";
+                                        break;
+                                    case 4:
+                                        descripcionICMP = "fragmentation needed, but DF bit set";
+                                        break;
+                                    case 5:
+                                        descripcionICMP = "source route failed";
+                                        break;
+                                    case 6:
+                                        descripcionICMP = "destination network unknown";
+                                        break;
+                                    case 7:
+                                        descripcionICMP = "destination network unknown";
+                                        break;
+                                    case 9:
+                                        descripcionICMP = "destination network administratevily prohibited";
+                                        break;
+                                    case 10:
+                                        descripcionICMP = "destination host administratevily prohibited";
+                                        break;
+                                    case 11:
+                                        descripcionICMP = "network unreachable for TOS";
+                                        break;
+                                    case 12:
+                                        descripcionICMP = "host unreachable for TOS";
+                                        break;
+                                    default:
+                                        descripcionICMP = "adentro afuera lento lento";
+                                }
+                            } else if (tipoICMP == 4) {
+                                descripcionICMP = "source quench";
+                            } else if (tipoICMP == 5) {
+                                switch (codigoICMP) {
+                                    case 0:
+                                        descripcionICMP = "redirect for network";
+                                        break;
+                                    case 1:
+                                        descripcionICMP = "redirect for host";
+                                        break;
+                                    case 2:
+                                        descripcionICMP = "redirect for TOS and network";
+                                        break;
+                                    case 3:
+                                        descripcionICMP = "redirect for TOS and host";
+                                        break;
+                                }
+                            } else if (tipoICMP == 8) {
+                                descripcionICMP = "echo request";
+                            } else if (tipoICMP == 11) {
+                                if (codigoICMP == 0) {
+                                    descripcionICMP = "time exceeded during transit";
+                                } else {
+                                    descripcionICMP = "time exceeded during assembly";
+                                }
+                            } else if (tipoICMP == 12) {
+                                if (codigoICMP == 0) {
+                                    descripcionICMP = "IP header bad";
+                                } else {
+                                    descripcionICMP = "required option missed";
+                                }
+                            } else if (tipoICMP == 13) {
+                                descripcionICMP = "timestamp request";
+                            } else if (tipoICMP == 14) {
+                                descripcionICMP = "timestamp reply";
+                            } else if (tipoICMP == 17) {
+                                descripcionICMP = "address mask request";
+                            } else {
+                                descripcionICMP = "address mask reply";
+                            }
+                        }//null - description
+                    }
+                }
+
+            } else if (paqueteActual.hasHeader(analizadorIP6)) {
+                //Análisis IPv6
+                protocolo = "Ipv6";
+            } else if (paqueteActual.hasHeader(analizadorICMP)) {
+                //agregar codigo para el analisis aqui
+                protocolo = "ICMP";
+            } else if (paqueteActual.hasHeader(analizadorARP)) {
+                //agregar codigo para el analisis aqui
+                protocolo = "ARP";
+            }
         }
     }
-
     /*El que nos paso Axel*/
     private static String asString(final byte[] mac) {
         final StringBuilder buf = new StringBuilder();
@@ -301,6 +369,97 @@ public class AnalisisTrama {
     private void analizarICMP(){
 
     }
+    //Metodo para analizar tramas IEEE 802.2
+    private void analizarIEEE(){
+        MACD=String.format("%02X:%02X:%02X:%02X:%02X:%02X",paqueteActual.getUByte(0),paqueteActual.getUByte(1),paqueteActual.getUByte(2),paqueteActual.getUByte(3),paqueteActual.getUByte(4),paqueteActual.getUByte(5));
+        MACO=String.format("%02X:%02X:%02X:%02X:%02X:%02X",paqueteActual.getUByte(6),paqueteActual.getUByte(7),paqueteActual.getUByte(8),paqueteActual.getUByte(9),paqueteActual.getUByte(10),paqueteActual.getUByte(11));
+
+        ssap = paqueteActual.getUByte(15)& 0x00000001;
+        c_r = "";
+        service = "Not NetBios";
+
+        if(ssap == 1){
+            c_r = "Respuesta";
+            if((paqueteActual.getUByte(15)-241) == 0){
+                service = "IBM NetBios";
+            }
+        }else if(ssap == 0){
+            c_r = "Comando";
+            if((paqueteActual.getUByte(15)-240) == 0){
+                service = "IBM NetBios";
+            }
+        }else{
+            c_r = "Otro";
+        }
+
+        DSAP=String.format("%02X ",paqueteActual.getUByte(14))+" | "+service;
+        SSAP=String.format("%02X ",paqueteActual.getUByte(15))+"  "+c_r+" | "+service;
+
+        //SSAP: http://www.telecomworld101.com/8022.html
+
+                /* Obteniendo el formato del paquete*/
+        control=String.format("%02X ",paqueteActual.getUByte(16));
+
+        if((paqueteActual.getByte(16) & 0x00000011) > 1){
+            //unnumbered
+            tipo="Unnumbered";
+            //pf
+            if((paqueteActual.getByte(16) & 0x00010011) >= 1){
+                PF="1";
+            }else{
+                PF="0";
+            }
+            //codigo usado
+            snrm = (paqueteActual.getByte(16) & 0x00000100);
+            snrme = (paqueteActual.getByte(16) & 0x11001100);
+            sabm = (paqueteActual.getByte(16) & 0x11000000);
+            sabme = (paqueteActual.getByte(16) & 0x11101100);
+            ui = (paqueteActual.getByte(16) & 0x00000000);
+            ur = (paqueteActual.getByte(16) & 0x00101000);
+            disc = (paqueteActual.getByte(16) & 0x00001000);
+            rst = (paqueteActual.getByte(16) & 0x11000100);
+            xid = (paqueteActual.getByte(16) & 0x11100100);
+
+
+        }else if((paqueteActual.getByte(16) & 0x00000001) == 1){
+            //Supervisory
+            tipo="Supervisory";
+            //pf
+            if((paqueteActual.getByte(17) & 0x00000001) == 1){
+                PF="1";
+            }else{
+                PF="0";
+            }
+            //nr
+            NR="NR: "+ paqueteActual.getByte(17)/2;
+
+            //codigo usado, quitamos los 2 primeros bits 01
+            int codigo_sup = (paqueteActual.getByte(16)>>2);
+            if(codigo_sup == 0){
+                codigo = "RR - Received Ready";
+            }else if(codigo_sup == 1){
+                codigo = "RNR - Received Not Ready";
+            }else if(codigo_sup == 2){
+                codigo = "REJ - Rejected";
+            }else{
+                codigo = "SRJ - Selective reject";
+            }
+        }else{
+            //Information &0x00000000
+            tipo="Information";
+            //pf
+            if((paqueteActual.getByte(17) & 0x00000001) == 1){
+                PF="1";
+            }else{
+                PF="0";
+            }
+            //ns: dividimos entre 2 para quitar el ultimo bit
+            NS="NS: "+paqueteActual.getByte(16)/2;
+            //nr
+            NR="NR: "+paqueteActual.getByte(17)/2;
+        }
+    }
+
 
     /*Metodos Auxiliares*/
     //Retorna un String con la fecha y tiempo de captura del paquete
@@ -787,4 +946,180 @@ public class AnalisisTrama {
   public void setChecksumICMP(int checksumICMP) {
     this.checksumICMP = checksumICMP;
   }
+
+    public String getTipoTrama() {
+        return tipoTrama;
+    }
+
+    public void setTipoTrama(String tipoTrama) {
+        this.tipoTrama = tipoTrama;
+    }
+
+    public String getMACO() {
+        return MACO;
+    }
+
+    public void setMACO(String MACO) {
+        this.MACO = MACO;
+    }
+
+    public String getMACD() {
+        return MACD;
+    }
+
+    public void setMACD(String MACD) {
+        this.MACD = MACD;
+    }
+
+    public String getC_r() {
+        return c_r;
+    }
+
+    public void setC_r(String c_r) {
+        this.c_r = c_r;
+    }
+
+    public String getService() {
+        return service;
+    }
+
+    public void setService(String service) {
+        this.service = service;
+    }
+
+    public String getDSAP() {
+        return DSAP;
+    }
+
+    public void setDSAP(String DSAP) {
+        this.DSAP = DSAP;
+    }
+
+    public String getSSAP() {
+        return SSAP;
+    }
+
+    public void setSSAP(String SSAP) {
+        this.SSAP = SSAP;
+    }
+
+    public String getControl() {
+        return control;
+    }
+
+    public void setControl(String control) {
+        this.control = control;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    public String getPF() {
+        return PF;
+    }
+
+    public void setPF(String PF) {
+        this.PF = PF;
+    }
+
+    public int getSnrm() {
+        return snrm;
+    }
+
+    public void setSnrm(int snrm) {
+        this.snrm = snrm;
+    }
+
+    public int getSnrme() {
+        return snrme;
+    }
+
+    public void setSnrme(int snrme) {
+        this.snrme = snrme;
+    }
+
+    public int getSabm() {
+        return sabm;
+    }
+
+    public void setSabm(int sabm) {
+        this.sabm = sabm;
+    }
+
+    public int getSabme() {
+        return sabme;
+    }
+
+    public void setSabme(int sabme) {
+        this.sabme = sabme;
+    }
+
+    public int getUi() {
+        return ui;
+    }
+
+    public void setUi(int ui) {
+        this.ui = ui;
+    }
+
+    public int getUr() {
+        return ur;
+    }
+
+    public void setUr(int ur) {
+        this.ur = ur;
+    }
+
+    public int getDisc() {
+        return disc;
+    }
+
+    public void setDisc(int disc) {
+        this.disc = disc;
+    }
+
+    public int getRst() {
+        return rst;
+    }
+
+    public void setRst(int rst) {
+        this.rst = rst;
+    }
+
+    public int getXid() {
+        return xid;
+    }
+
+    public void setXid(int xid) {
+        this.xid = xid;
+    }
+
+    public String getNR() {
+        return NR;
+    }
+
+    public void setNR(String NR) {
+        this.NR = NR;
+    }
+
+    public String getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(String codigo) {
+        this.codigo = codigo;
+    }
+
+    public String getNS() {
+        return NS;
+    }
+
+    public void setNS(String NS) {
+        this.NS = NS;
+    }
 }

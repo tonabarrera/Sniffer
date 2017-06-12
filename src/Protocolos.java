@@ -301,6 +301,8 @@ public class Protocolos extends javax.swing.JFrame {
             }
             listaOriginal.setModel(modelo);
 
+
+
             if (tramaActual.getProtocolo().equals("Ipv4")) {
                 mostarProtocoloIPv4(tramaActual);
                 listaAnalisis.setModel(modelo);
@@ -312,6 +314,9 @@ public class Protocolos extends javax.swing.JFrame {
                 mostrarProtocoloIGMP(tramaActual);
             }else if(tramaActual.getProtocolo().equals("ICMP")){
                 mostrarProtocoloICMP(tramaActual);
+            }
+            else if(tramaActual.getProtocolo().equals("LLC")){
+                mostrarProtocoloLLC(tramaActual);
             }
         }
     }
@@ -563,7 +568,100 @@ public class Protocolos extends javax.swing.JFrame {
 
         listaAnalisis.setModel(modelo);
     }
+    private void mostrarProtocoloLLC(AnalisisTrama tramaActual){
+        StringBuilder informacion = new StringBuilder();
+        DefaultListModel modelo = new DefaultListModel();
 
+        informacion.append("---- Protocolo: LLC ----");
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(tramaActual.getMACD());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append(tramaActual.getMACO());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("DSAP: "+tramaActual.getDSAP());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("SSAP: "+tramaActual.getSSAP());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("Control: "+tramaActual.getControl());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+
+        informacion.append("Tipo: "+tramaActual.getTipo());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        informacion.append("PF: "+tramaActual.getPF());
+        modelo.addElement(informacion.toString());
+        informacion.setLength(0);
+
+        if(tramaActual.getTipo().equals("Unnumbered")){
+            if( tramaActual.getSnrm()== 1){
+                informacion.append("Code: SNRM | Respuesta Normal");
+                modelo.addElement(informacion.toString());
+                informacion.setLength(0);
+            }else if(tramaActual.getSnrme() == 204){
+                informacion.append("Code: SNRME | Respuesta Normal Extendida");
+                modelo.addElement(informacion.toString());
+                informacion.setLength(0);
+            }else if(tramaActual.getSabm() == 192){
+                informacion.append("Code: SABM | Respuesta Asincrona");
+                modelo.addElement(informacion.toString());
+                informacion.setLength(0);
+            }else if(tramaActual.getSabme() == 236){
+                informacion.append("Code: SABME | Respuesta Asincrona Extendida");
+                modelo.addElement(informacion.toString());
+                informacion.setLength(0);
+            }else if(tramaActual.getUi() == 0){
+                informacion.append("Code: UI | Información sin numerar");
+                modelo.addElement(informacion.toString());
+                informacion.setLength(0);
+            }else if(tramaActual.getUr() == 40){
+                informacion.append("Code: UR | UR");
+                modelo.addElement(informacion.toString());
+                informacion.setLength(0);
+            }else if(tramaActual.getDisc() == 8){
+                informacion.append("Code: DISC | Desconexión");
+                modelo.addElement(informacion.toString());
+                informacion.setLength(0);
+            }else if(tramaActual.getRst() == 196){
+                informacion.append("Code: RSET | Reinicio");
+                modelo.addElement(informacion.toString());
+                informacion.setLength(0);
+            }else if(tramaActual.getXid() == 228){
+                informacion.append("Code: XID | Intercambio de ID");
+                modelo.addElement(informacion.toString());
+                informacion.setLength(0);
+            }
+        }else if(tramaActual.getTipo().equals("Supervisory")){
+            informacion.append(tramaActual.getNR());
+            modelo.addElement(informacion.toString());
+            informacion.setLength(0);
+            informacion.append(tramaActual.getCodigo());
+            modelo.addElement(informacion.toString());
+            informacion.setLength(0);
+        }else{
+            informacion.append(tramaActual.getNS());
+            modelo.addElement(informacion.toString());
+            informacion.setLength(0);
+
+            informacion.append(tramaActual.getNS());
+            modelo.addElement(informacion.toString());
+            informacion.setLength(0);
+        }
+
+        listaAnalisis.setModel(modelo);
+    }
     /*Declaración de metodos de utilería en la aplicación*/
     //Metodo para agregar una fila a la JTable, la fila se llena con los valores de trama actual
     private void argegarFila() {
