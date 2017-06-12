@@ -68,7 +68,5 @@ public class CapturaTramas {
 
     /*Metodo para pausar la rececpción de paquetes*/
     public void pausarObtenecion() {
-        pcap.close();
-    }
-}
-//axelernesto@gmail.com
+        pcap.close();}
+}//axelernesto@gmail.com
